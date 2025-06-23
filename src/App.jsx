@@ -37,9 +37,9 @@ function App() {
   };
 
   return (
-    <div className="mobile-frame">
+    <>
       {renderScreen()}
-    </div>
+    </>
   );
 }
 
