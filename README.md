@@ -10,3 +10,20 @@ Currently, two official plugins are available:
 ## Expanding the ESLint configuration
 
 If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+
+# Young GGL Calculator
+
+영끌 계산기 - 내집마련 얼마까지 가능할까?
+
+## 최근 업데이트
+- 2024년 12월: 핸드폰 모형 제거 및 전체 화면 레이아웃 적용
+
+## 개발 서버 실행
+```bash
+npm run dev
+```
+
+## 배포
+```bash
+npm run deploy
+```
