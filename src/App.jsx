@@ -1,25 +1,46 @@
 import { useState } from 'react';
-import InitialScreen from './components/InitialScreen';
-import ResultScreen from './components/ResultScreen';
+import HomeScreen from './components/HomeScreen';
+import AssetScreen from './components/AssetScreen';
+import IncomeScreen from './components/IncomeScreen';
 
 function App() {
-  const [screen, setScreen] = useState('initial'); // 'initial' 또는 'result'
-  const [amounts, setAmounts] = useState({ cash: 0, severancePay: 0 });
+  const [screen, setScreen] = useState('home'); // 'home', 'assets', 'income', etc.
 
-  const handleRestart = () => {
-    setScreen('initial');
+  const handleStart = () => {
+    setScreen('assets');
   };
 
-  const handleShowResult = (data) => {
-    setAmounts(data);
-    setScreen('result');
+  const handleBackToHome = () => {
+    setScreen('home');
+  };
+  
+  const handleAssetsNext = () => {
+    setScreen('income');
   };
 
-  if (screen === 'result') {
-    return <ResultScreen onRestart={handleRestart} />;
-  }
+  const handleIncomeNext = () => {
+    // TODO: A04 대출화면으로 이동
+    console.log('대출 화면으로 이동');
+  };
 
-  return <InitialScreen onNext={handleShowResult} />;
+  // 현재 화면 상태에 따라 적절한 컴포넌트를 렌더링
+  const renderScreen = () => {
+    switch (screen) {
+      case 'assets':
+        return <AssetScreen onNext={handleAssetsNext} onBack={handleBackToHome} />;
+      case 'income':
+        return <IncomeScreen onNext={handleIncomeNext} onBack={() => setScreen('assets')} />;
+      case 'home':
+      default:
+        return <HomeScreen onStart={handleStart} />;
+    }
+  };
+
+  return (
+    <div className="mobile-frame">
+      {renderScreen()}
+    </div>
+  );
 }
 
 export default App;
