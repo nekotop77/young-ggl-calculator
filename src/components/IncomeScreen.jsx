@@ -1,57 +1,94 @@
-import { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useMemo } from 'react';
 
-const formatNumber = (num) => {
-  if (!num) return '';
-  return num.toLocaleString('ko-KR');
-};
+const BackIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M15 19L8 12L15 5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
 
-const numberToKorean = (num) => {
-  if (!num || num === 0) return '';
-  const eok = Math.floor(num / 100000000);
-  const cheonman = Math.floor((num % 100000000) / 10000000);
-  const baekman = Math.floor((num % 10000000) / 1000000);
-  const shipman = Math.floor((num % 1000000) / 100000);
-  const man = Math.floor((num % 100000) / 10000);
-  let result = '';
-  if (eok > 0) result += `${eok}억`;
-  else if (cheonman > 0) result += `${cheonman}천만`;
-  else if (baekman > 0) result += `${baekman}백만`;
-  else if (shipman > 0) result += `${shipman}십만`;
-  else if (man > 0) result += `${man}만`;
-  else return '';
-  result += '원';
-  return result.trim();
-};
+function IncomeScreen({ incomes, setIncomes, onNext, onBack, isEdit, onEditComplete }) {
+  const salaryInputRef = useRef(null);
 
-function IncomeScreen({ onNext, onBack }) {
-  const [income, setIncome] = useState({
-    job: 0,
-    etc: 0,
-  });
-  const jobInputRef = useRef(null);
   useEffect(() => {
-    if (jobInputRef.current) jobInputRef.current.focus();
+    if (salaryInputRef.current) {
+      salaryInputRef.current.focus();
+    }
   }, []);
 
   const handleIncomeChange = (id, value) => {
     const cleanValue = value.replace(/원/g, '').replace(/[^0-9]/g, '');
     let numericValue = cleanValue === '' ? 0 : Number(cleanValue);
     if (numericValue >= 100000000000) numericValue = 99999999999;
-    setIncome(prev => ({ ...prev, [id]: numericValue }));
+    setIncomes(prev => ({ ...prev, [id]: numericValue }));
   };
 
-  const totalIncome = useMemo(() => income.job + income.etc, [income]);
+  const totalIncome = useMemo(() => {
+    return Object.values(incomes).reduce((sum, val) => sum + val, 0);
+  }, [incomes]);
+
   const isNextDisabled = totalIncome === 0;
+  const hasInput = Object.values(incomes).some(value => value > 0);
+
+  const incomeTypes = [
+    { id: 'salary', label: '연봉', placeholder: '연봉을 적어주세요' },
+    { id: 'bonus', label: '상여', placeholder: '상여금 적어주세요 (없으면 빈칸)' },
+    { id: 'side', label: '부수입', placeholder: '부수입 적어주세요' },
+    { id: 'other', label: '기타', placeholder: '기타 소득 적어주세요' },
+  ];
+
+  const formatNumber = (num) => {
+    if (!num) return '';
+    return num.toLocaleString('ko-KR');
+  };
+
+  const numberToKorean = (num) => {
+    if (typeof num !== 'number' || isNaN(num)) return null;
+    const absNum = Math.abs(num);
+    const sign = num < 0 ? '-' : '';
+    if (absNum < 1000) return num.toString() + '원';
+    const toFixedDown = (val, digits) => {
+      const factor = Math.pow(10, digits);
+      return (Math.floor(val * factor) / factor).toFixed(digits).replace(/\.00$/, '');
+    };
+    if (absNum >= 1e8) {
+      const val = absNum / 1e4;
+      if (val >= 10000) {
+        const eok = val / 10000;
+        return sign + (eok % 1 === 0 ? eok.toFixed(0) : toFixedDown(eok, 2)) + '억원';
+      } else {
+        return sign + (val % 1 === 0 ? val.toFixed(0) : toFixedDown(val, 2)) + '만원';
+      }
+    } else if (absNum >= 1e4) {
+      const val = absNum / 1e4;
+      return sign + (val % 1 === 0 ? val.toFixed(0) : toFixedDown(val, 2)) + '만원';
+    } else if (absNum >= 1e3) {
+      const val = absNum / 1e3;
+      return sign + (val % 1 === 0 ? val.toFixed(0) : toFixedDown(val, 2)) + '천원';
+    }
+    return num.toString() + '원';
+  };
 
   return (
     <div className="screen-container">
       <header className="screen-header">
-        <button className="back-button" onClick={onBack}>
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M15 19L8 12L15 5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        </button>
+        <button className="back-button" onClick={onBack}><BackIcon /></button>
         <h1 className="screen-title">소득</h1>
+        <button 
+          className="reset-button" 
+          onClick={() => setIncomes({ salary: 0, bonus: 0, side: 0, other: 0 })}
+          style={{
+            background: 'none',
+            border: 'none',
+            color: hasInput ? '#ddd' : '#666',
+            fontSize: '16px',
+            cursor: 'pointer',
+            padding: '8px 12px',
+            borderRadius: '6px',
+            marginLeft: 'auto'
+          }}
+        >
+          초기화
+        </button>
       </header>
       <main>
         <div className="total-display">
@@ -60,49 +97,35 @@ function IncomeScreen({ onNext, onBack }) {
           <div className="korean-unit">{numberToKorean(totalIncome)}</div>
         </div>
         <div className="form-group">
-          <div className="input-card">
-            <div className="label">직장인 연 소득</div>
-            <div className="input-wrapper">
-              <div className="input-auto-shrink">
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  placeholder="금액 적어주세요"
-                  value={income.job ? `${formatNumber(income.job)}원` : ''}
-                  onChange={(e) => handleIncomeChange('job', e.target.value)}
-                  ref={jobInputRef}
-                />
+          {incomeTypes.map(({ id, label, placeholder }) => (
+            <div key={id} className="input-card">
+              <div className="label">{label}</div>
+              <div className="input-wrapper">
+                <div className="input-auto-shrink">
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    placeholder={placeholder}
+                    value={incomes[id] ? formatNumber(incomes[id]) : ''}
+                    onChange={(e) => handleIncomeChange(id, e.target.value)}
+                    ref={id === 'salary' ? salaryInputRef : null}
+                  />
+                </div>
               </div>
+              <div className="korean-unit">{numberToKorean(incomes[id])}</div>
             </div>
-            <div className="korean-unit">{income.job ? numberToKorean(income.job) : ''}</div>
-          </div>
-          <div className="input-card">
-            <div className="label">기타 연 소득</div>
-            <div className="input-wrapper">
-              <div className="input-auto-shrink">
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  placeholder="금액 적어주세요 (없으면 빈칸)"
-                  value={income.etc ? `${formatNumber(income.etc)}원` : ''}
-                  onChange={(e) => handleIncomeChange('etc', e.target.value)}
-                />
-              </div>
-            </div>
-            <div className="korean-unit">{numberToKorean(income.etc)}</div>
-          </div>
+          ))}
         </div>
       </main>
       <button
         className="bottom-button"
         disabled={isNextDisabled}
-        onClick={onNext}
-        style={{ backgroundColor: isNextDisabled ? undefined : '#3C4CFF' }}
+        onClick={isEdit ? onEditComplete : onNext}
       >
-        다음 →
+        {isEdit ? '수정완료' : '다음 →'}
       </button>
     </div>
   );
 }
 
-export default IncomeScreen; 
+export default IncomeScreen;

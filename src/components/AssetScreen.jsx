@@ -18,25 +18,30 @@ const formatNumber = (num) => {
 };
 
 const numberToKorean = (num) => {
-  if (!num || num === 0) return '';
-  
-  const eok = Math.floor(num / 100000000);
-  const cheonman = Math.floor((num % 100000000) / 10000000);
-  const baekman = Math.floor((num % 10000000) / 1000000);
-  const shipman = Math.floor((num % 1000000) / 100000);
-  const man = Math.floor((num % 100000) / 10000);
-  
-  let result = '';
-  
-  if (eok > 0) result += `${eok}억`;
-  else if (cheonman > 0) result += `${cheonman}천만`;
-  else if (baekman > 0) result += `${baekman}백만`;
-  else if (shipman > 0) result += `${shipman}십만`;
-  else if (man > 0) result += `${man}만`;
-  else return '';
-  
-  result += '원';
-  return result.trim();
+  if (typeof num !== 'number' || isNaN(num)) return null;
+  const absNum = Math.abs(num);
+  const sign = num < 0 ? '-' : '';
+  if (absNum < 1000) return num.toString() + '원';
+  const toFixedDown = (val, digits) => {
+    const factor = Math.pow(10, digits);
+    return (Math.floor(val * factor) / factor).toFixed(digits).replace(/\.00$/, '');
+  };
+  if (absNum >= 1e8) {
+    const val = absNum / 1e4;
+    if (val >= 10000) {
+      const eok = val / 10000;
+      return sign + (eok % 1 === 0 ? eok.toFixed(0) : toFixedDown(eok, 2)) + '억원';
+    } else {
+      return sign + (val % 1 === 0 ? val.toFixed(0) : toFixedDown(val, 2)) + '만원';
+    }
+  } else if (absNum >= 1e4) {
+    const val = absNum / 1e4;
+    return sign + (val % 1 === 0 ? val.toFixed(0) : toFixedDown(val, 2)) + '만원';
+  } else if (absNum >= 1e3) {
+    const val = absNum / 1e3;
+    return sign + (val % 1 === 0 ? val.toFixed(0) : toFixedDown(val, 2)) + '천원';
+  }
+  return num.toString() + '원';
 };
 
 const assetTypes = [
@@ -46,14 +51,7 @@ const assetTypes = [
   { id: 'insurance', label: '보험', placeholder: '담보대출 가능 금액 적어주세요' },
 ];
 
-function AssetScreen({ onNext, onBack }) {
-  const [assets, setAssets] = useState({
-    cash: 0,
-    stocks: 0,
-    severance: 0,
-    insurance: 0,
-  });
-
+function AssetScreen({ assets, setAssets, onNext, onBack, isEdit, onEditComplete }) {
   const cashInputRef = useRef(null);
 
   useEffect(() => {
@@ -63,7 +61,6 @@ function AssetScreen({ onNext, onBack }) {
   }, []);
 
   const handleAssetChange = (id, value) => {
-    // "원" 문자를 제거하고 숫자만 추출
     const cleanValue = value.replace(/원/g, '').replace(/[^0-9]/g, '');
     let numericValue = cleanValue === '' ? 0 : Number(cleanValue);
     if (numericValue >= 100000000000) numericValue = 99999999999;
@@ -75,6 +72,7 @@ function AssetScreen({ onNext, onBack }) {
   }, [assets]);
 
   const isNextDisabled = totalAssets === 0;
+  const hasInput = Object.values(assets).some(value => value > 0);
 
   return (
     <div className="screen-container">
@@ -87,7 +85,7 @@ function AssetScreen({ onNext, onBack }) {
           style={{
             background: 'none',
             border: 'none',
-            color: '#666',
+            color: hasInput ? '#ddd' : '#666',
             fontSize: '16px',
             cursor: 'pointer',
             padding: '8px 12px',
@@ -116,7 +114,7 @@ function AssetScreen({ onNext, onBack }) {
                     type="text"
                     inputMode="numeric"
                     placeholder={placeholder}
-                    value={assets[id] ? `${formatNumber(assets[id])}원` : ''}
+                    value={assets[id] ? formatNumber(assets[id]) : ''}
                     onChange={(e) => handleAssetChange(id, e.target.value)}
                     ref={id === 'cash' ? cashInputRef : null}
                   />
@@ -131,9 +129,9 @@ function AssetScreen({ onNext, onBack }) {
       <button
         className="bottom-button"
         disabled={isNextDisabled}
-        onClick={onNext}
+        onClick={isEdit ? onEditComplete : onNext}
       >
-        다음 →
+        {isEdit ? '수정완료' : '다음 →'}
       </button>
     </div>
   );
