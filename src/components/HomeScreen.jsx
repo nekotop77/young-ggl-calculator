@@ -9,7 +9,6 @@ function HomeScreen({ onStart }) {
           <br />
           <strong>영끌 계산기</strong>
         </h1>
-
         <div className="selection-container">
           <div className="selection-card">
             <div className="icon">🏡</div>
@@ -21,7 +20,6 @@ function HomeScreen({ onStart }) {
           </div>
         </div>
       </div>
-
       <button className="bottom-button" onClick={onStart}>
         시작하기
       </button>

@@ -19,29 +19,55 @@ const formatNumber = (num) => {
 
 const numberToKorean = (num) => {
   if (typeof num !== 'number' || isNaN(num)) return null;
+  if (num === 0) return '0원';
   const absNum = Math.abs(num);
   const sign = num < 0 ? '-' : '';
-  if (absNum < 1000) return num.toString() + '원';
-  const toFixedDown = (val, digits) => {
-    const factor = Math.pow(10, digits);
-    return (Math.floor(val * factor) / factor).toFixed(digits).replace(/\.00$/, '');
-  };
-  if (absNum >= 1e8) {
-    const val = absNum / 1e4;
-    if (val >= 10000) {
-      const eok = val / 10000;
-      return sign + (eok % 1 === 0 ? eok.toFixed(0) : toFixedDown(eok, 2)) + '억원';
-    } else {
-      return sign + (val % 1 === 0 ? val.toFixed(0) : toFixedDown(val, 2)) + '만원';
-    }
-  } else if (absNum >= 1e4) {
-    const val = absNum / 1e4;
-    return sign + (val % 1 === 0 ? val.toFixed(0) : toFixedDown(val, 2)) + '만원';
-  } else if (absNum >= 1e3) {
-    const val = absNum / 1e3;
-    return sign + (val % 1 === 0 ? val.toFixed(0) : toFixedDown(val, 2)) + '천원';
+  let result = '';
+  let remain = absNum;
+  let lastUnit = '';
+  // 억 단위
+  if (remain >= 1e8) {
+    const eok = Math.floor(remain / 1e8);
+    result += `${eok}억`;
+    remain = remain % 1e8;
+    lastUnit = '억';
   }
-  return num.toString() + '원';
+  // 천만 단위 (만 단위가 100 이상)
+  if (remain >= 1e7) {
+    const chun = Math.floor(remain / 1e7);
+    result += `${chun}천`;
+    remain = remain % 1e7;
+    lastUnit = '천';
+  }
+  // 만 단위
+  if (remain >= 1e4) {
+    const man = Math.floor(remain / 1e4);
+    result += `${man}만`;
+    remain = remain % 1e4;
+    lastUnit = '만';
+  }
+  // 천 단위는 만 단위가 없을 때만 붙임
+  if (remain >= 1e3 && result.indexOf('만') === -1) {
+    const chun = Math.floor(remain / 1e3);
+    result += `${chun}천`;
+    remain = remain % 1e3;
+    lastUnit = '천';
+  }
+  if (remain > 0) {
+    result += `${remain.toLocaleString('ko-KR')}`;
+    lastUnit = '';
+  }
+  // 단위 붙이기
+  if (lastUnit === '천') {
+    result += '만원';
+  } else if (lastUnit === '만') {
+    result += '원';
+  } else if (lastUnit === '억') {
+    result += '원';
+  } else if (result) {
+    result += '원';
+  }
+  return sign + result;
 };
 
 const assetTypes = [
@@ -101,14 +127,14 @@ function AssetScreen({ assets, setAssets, onNext, onBack, isEdit, onEditComplete
         <div className="total-display">
           <div className="label">총 자산</div>
           <div className="amount">{totalAssets > 0 ? `${formatNumber(totalAssets)}원` : '0원'}</div>
-          <div className="korean-unit">{numberToKorean(totalAssets)}</div>
+          <div className="korean-unit" style={{fontSize:'16px'}}>{numberToKorean(totalAssets)}</div>
         </div>
 
         <div className="form-group">
           {assetTypes.map(({ id, label, placeholder }) => (
             <div key={id} className="input-card">
               <div className="label">{label}</div>
-              <div className="input-wrapper">
+              <div className="input-wrapper asset-input">
                 <div className="input-auto-shrink">
                   <input
                     type="text"

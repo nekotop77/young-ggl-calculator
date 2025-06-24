@@ -13,38 +13,64 @@ const formatNumber = (num) => {
 
 const numberToKorean = (num) => {
   if (typeof num !== 'number' || isNaN(num)) return null;
+  if (num === 0) return '0원';
   const absNum = Math.abs(num);
   const sign = num < 0 ? '-' : '';
-  if (absNum < 1000) return num.toString() + '원';
-  const toFixedDown = (val, digits) => {
-    const factor = Math.pow(10, digits);
-    return (Math.floor(val * factor) / factor).toFixed(digits).replace(/\.00$/, '');
-  };
-  if (absNum >= 1e8) {
-    const val = absNum / 1e4;
-    if (val >= 10000) {
-      const eok = val / 10000;
-      return sign + (eok % 1 === 0 ? eok.toFixed(0) : toFixedDown(eok, 2)) + '억원';
-    } else {
-      return sign + (val % 1 === 0 ? val.toFixed(0) : toFixedDown(val, 2)) + '만원';
-    }
-  } else if (absNum >= 1e4) {
-    const val = absNum / 1e4;
-    return sign + (val % 1 === 0 ? val.toFixed(0) : toFixedDown(val, 2)) + '만원';
-  } else if (absNum >= 1e3) {
-    const val = absNum / 1e3;
-    return sign + (val % 1 === 0 ? val.toFixed(0) : toFixedDown(val, 2)) + '천원';
+  let result = '';
+  let remain = absNum;
+  let lastUnit = '';
+  // 억 단위
+  if (remain >= 1e8) {
+    const eok = Math.floor(remain / 1e8);
+    result += `${eok}억`;
+    remain = remain % 1e8;
+    lastUnit = '억';
   }
-  return num.toString() + '원';
+  // 천만 단위 (만 단위가 100 이상)
+  if (remain >= 1e7) {
+    const chun = Math.floor(remain / 1e7);
+    result += `${chun}천`;
+    remain = remain % 1e7;
+    lastUnit = '천';
+  }
+  // 만 단위
+  if (remain >= 1e4) {
+    const man = Math.floor(remain / 1e4);
+    result += `${man}만`;
+    remain = remain % 1e4;
+    lastUnit = '만';
+  }
+  // 천 단위는 만 단위가 없을 때만 붙임
+  if (remain >= 1e3 && result.indexOf('만') === -1) {
+    const chun = Math.floor(remain / 1e3);
+    result += `${chun}천`;
+    remain = remain % 1e3;
+    lastUnit = '천';
+  }
+  if (remain > 0) {
+    result += `${remain.toLocaleString('ko-KR')}`;
+    lastUnit = '';
+  }
+  // 단위 붙이기
+  if (lastUnit === '천') {
+    result += '만원';
+  } else if (lastUnit === '만') {
+    result += '원';
+  } else if (lastUnit === '억') {
+    result += '원';
+  } else if (result) {
+    result += '원';
+  }
+  return sign + result;
 };
 
 function ResultScreen({ assets, incomes, loan, onRestart, onEdit }) {
   // 합계 계산
   const totalAssets = Object.values(assets).reduce((sum, val) => sum + Number(val), 0);
-  const totalIncome = Object.values(incomes).reduce((sum, val) => sum + Number(val), 0);
-  const totalLoan = loan.monthlyPayment > 0 ? loan.monthlyPayment * loan.years * 12 : 0;
-  // 집 가격대: (자산+소득+대출) * 0.5 (LTV 50%)
-  const housePrice = Math.round((totalAssets + totalIncome + totalLoan) * 0.5);
+  // 대출화면에서 계산된 최대 대출 가능 금액을 직접 사용 (천만원 단위로 내림)
+  const totalLoan = loan.loanAmount ? Math.floor(loan.loanAmount / 10000000) * 10000000 : 0;
+  // 집 가격대: 자산 + 대출 합계
+  const housePrice = totalAssets + totalLoan;
 
   // 부대비용 계산
   const 취득세 = Math.round(housePrice * 0.01);
@@ -54,8 +80,8 @@ function ResultScreen({ assets, incomes, loan, onRestart, onEdit }) {
 
   // 수정사항 감지: 자산/소득/대출 값이 0이 아니면 활성화
   const isRestartEnabled = useMemo(() => {
-    return totalAssets > 0 || totalIncome > 0 || totalLoan > 0;
-  }, [totalAssets, totalIncome, totalLoan]);
+    return totalAssets > 0 || totalLoan > 0;
+  }, [totalAssets, totalLoan]);
 
   return (
     <div className="screen-container">
@@ -75,15 +101,7 @@ function ResultScreen({ assets, incomes, loan, onRestart, onEdit }) {
             <div>
               <div className="label" style={{color:'#aaa',marginBottom:'0.2em'}}>자산</div>
               <div style={{fontWeight:700,fontSize:'1.1rem',color:'#fff'}}>{formatNumber(totalAssets)}원</div>
-              <div className="korean-unit" style={{color:'#62BBFF'}}>{numberToKorean(totalAssets)}</div>
-            </div>
-          </div>
-          {/* 소득 카드 */}
-          <div className="input-card" style={{display:'flex',flexDirection:'row',alignItems:'center',justifyContent:'space-between',width:'100%',maxWidth:'400px',padding:'1.1rem 1.2rem',boxSizing:'border-box'}}>
-            <div>
-              <div className="label" style={{color:'#aaa',marginBottom:'0.2em'}}>소득</div>
-              <div style={{fontWeight:700,fontSize:'1.1rem',color:'#fff'}}>{formatNumber(totalIncome)}원</div>
-              <div className="korean-unit" style={{color:'#62BBFF'}}>{numberToKorean(totalIncome)}</div>
+              <div className="korean-unit" style={{color:'#62BBFF',fontSize:'16px'}}>{numberToKorean(totalAssets)}</div>
             </div>
           </div>
           {/* 대출 카드 */}
@@ -91,7 +109,7 @@ function ResultScreen({ assets, incomes, loan, onRestart, onEdit }) {
             <div>
               <div className="label" style={{color:'#aaa',marginBottom:'0.2em'}}>대출</div>
               <div style={{fontWeight:700,fontSize:'1.1rem',color:'#fff'}}>{formatNumber(totalLoan)}원</div>
-              <div className="korean-unit" style={{color:'#62BBFF'}}>{numberToKorean(totalLoan)}</div>
+              <div className="korean-unit" style={{color:'#62BBFF',fontSize:'16px'}}>{numberToKorean(totalLoan)}</div>
             </div>
           </div>
         </div>
@@ -103,18 +121,24 @@ function ResultScreen({ assets, incomes, loan, onRestart, onEdit }) {
           </div>
           <div style={{flex:1}}>
             <div style={{display:'flex',justifyContent:'space-between',fontWeight:600,marginBottom:'0.3em'}}>
-              <span>추가비용 합계</span>
+              <span>부대비용 합계</span>
               <span>{formatNumber(부대비합계)}원</span>
             </div>
             <div style={{display:'flex',flexDirection:'column',gap:'0.2em',color:'#aaa',fontSize:'0.98em'}}>
-              <div style={{display:'flex',justifyContent:'space-between'}}><span>취득세</span><span>{formatNumber(취득세)}원</span></div>
-              <div style={{display:'flex',justifyContent:'space-between'}}><span>복비</span><span>{formatNumber(복비)}원</span></div>
-              <div style={{display:'flex',justifyContent:'space-between'}}><span>법무 등기비</span><span>{formatNumber(법무등기비)}원</span></div>
+              <div style={{display:'flex',justifyContent:'space-between'}}><span>취득세</span><span style={{textAlign:'right'}}>{formatNumber(취득세)}원</span></div>
+              <div style={{display:'flex',justifyContent:'space-between'}}><span>복비</span><span style={{textAlign:'right'}}>{formatNumber(복비)}원</span></div>
+              <div style={{display:'flex',justifyContent:'space-between'}}><span>법무 등기비</span><span style={{textAlign:'right'}}>{formatNumber(법무등기비)}원</span></div>
             </div>
           </div>
         </div>
-        <button className="bottom-button" style={{marginTop:'2.5rem',maxWidth:'400px',marginLeft:'auto',marginRight:'auto',display:'block'}} disabled={!isRestartEnabled} onClick={onRestart}>다시 계산하기</button>
       </main>
+      <button
+        className="bottom-button"
+        disabled={!isRestartEnabled}
+        onClick={onRestart}
+      >
+        다시 계산하기
+      </button>
     </div>
   );
 }
