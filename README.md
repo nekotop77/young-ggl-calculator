@@ -27,3 +27,4 @@ npm run dev
 ```bash
 npm run deploy
 ```
+# 영끌 계산기 - 재배포 트리거 Tue Jun 24 09:55:44 KST 2025
