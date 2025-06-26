@@ -367,12 +367,14 @@ function ResultScreen({ assets, incomes, loan, onRestart, onEdit }) {
         </div>
       </main>
       
-      <button
-        className="bottom-button"
-        onClick={onRestart}
-      >
-        처음부터 다시하기
-      </button>
+      <div className="fixed-bottom-container">
+        <button
+          className="bottom-button"
+          onClick={onRestart}
+        >
+          처음부터 다시하기
+        </button>
+      </div>
     </div>
   );
 }

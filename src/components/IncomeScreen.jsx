@@ -182,13 +182,16 @@ function IncomeScreen({ incomes, setIncomes, onNext, onBack, isEdit, onEditCompl
           ))}
         </div>
       </main>
-      <button
-        className="bottom-button"
-        disabled={isNextDisabled}
-        onClick={isEdit ? onEditComplete : onNext}
-      >
-        {isEdit ? '수정완료' : '다음 →'}
-      </button>
+      
+      <div className="fixed-bottom-container">
+        <button
+          className="bottom-button"
+          disabled={isNextDisabled}
+          onClick={isEdit ? onEditComplete : onNext}
+        >
+          {isEdit ? '수정완료' : '다음 →'}
+        </button>
+      </div>
     </div>
   );
 }

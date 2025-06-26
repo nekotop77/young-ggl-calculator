@@ -466,15 +466,18 @@ function LoanScreen({ loan, setLoan, incomes, assets, onBack, onNext, isEdit, on
           >
             DSR 계산
           </button>
-          <button
-            className="bottom-button"
-            disabled={!dsrCalculated}
-            onClick={isEdit ? onEditComplete : onNext}
-          >
-            영끌 확인하기 →
-          </button>
         </div>
       </main>
+
+      <div className="fixed-bottom-container">
+        <button
+          className="bottom-button"
+          disabled={!dsrCalculated}
+          onClick={isEdit ? onEditComplete : onNext}
+        >
+          영끌 확인하기 →
+        </button>
+      </div>
     </div>
   );
 }
