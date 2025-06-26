@@ -72,7 +72,7 @@ const numberToKorean = (num) => {
 
 const assetTypes = [
   { id: 'cash', label: '현금', placeholder: '금액을 적어주세요' },
-  { id: 'stocks', label: '주식', placeholder: '금액 적어주세요 (없으면 빈칸)' },
+  { id: 'stocks', label: '주식', placeholder: '금액 적어주세요' },
   { id: 'severance', label: '퇴직금', placeholder: '중간정산 가능한 금액 적어주세요' },
   { id: 'insurance', label: '보험', placeholder: '담보대출 가능 금액 적어주세요' },
 ];
@@ -87,9 +87,10 @@ function AssetScreen({ assets, setAssets, onNext, onBack, isEdit, onEditComplete
   }, []);
 
   const handleAssetChange = (id, value) => {
+    // "원" 제거 후 숫자만 추출
     const cleanValue = value.replace(/원/g, '').replace(/[^0-9]/g, '');
-    let numericValue = cleanValue === '' ? 0 : Number(cleanValue);
-    if (numericValue >= 100000000000) numericValue = 99999999999;
+    let numericValue = cleanValue === '' ? 0 : Number(cleanValue) * 10000; // 10,000원 단위로 저장
+    if (numericValue >= 100000000000000) return; // 1조 제한 (입력 차단)
     setAssets(prev => ({ ...prev, [id]: numericValue }));
   };
 
@@ -99,6 +100,46 @@ function AssetScreen({ assets, setAssets, onNext, onBack, isEdit, onEditComplete
 
   const isNextDisabled = totalAssets === 0;
   const hasInput = Object.values(assets).some(value => value > 0);
+
+  // 입력용 표시 값 (만원 단위) - 콤마 포함
+  const getDisplayValue = (value) => {
+    if (!value || value === 0) return '';
+    const manWon = Math.floor(value / 10000);
+    return manWon.toLocaleString('ko-KR');
+  };
+
+  // 한글 단위 표시 (만원 단위)
+  const numberToKoreanDisplay = (num) => {
+    if (typeof num !== 'number' || isNaN(num) || num === 0) return null;
+    const manWon = Math.floor(num / 10000);
+    
+    // 조 단위 (1조 = 1,000,000만원)
+    if (manWon >= 100000000) {
+      const jo = Math.floor(manWon / 100000000);
+      const remainEok = Math.floor((manWon % 100000000) / 10000);
+      const remainMan = manWon % 10000;
+      let result = `${jo.toLocaleString('ko-KR')}조`;
+      if (remainEok > 0) {
+        result += `${remainEok.toLocaleString('ko-KR')}억`;
+      }
+      if (remainMan > 0) {
+        result += `${remainMan.toLocaleString('ko-KR')}만`;
+      }
+      return result + '원';
+    }
+    // 억 단위
+    else if (manWon >= 10000) {
+      const eok = Math.floor(manWon / 10000);
+      const remainMan = manWon % 10000;
+      if (remainMan === 0) {
+        return `${eok.toLocaleString('ko-KR')}억원`;
+      } else {
+        return `${eok.toLocaleString('ko-KR')}억${remainMan.toLocaleString('ko-KR')}만원`;
+      }
+    } else {
+      return `${manWon.toLocaleString('ko-KR')}만원`;
+    }
+  };
 
   return (
     <div className="screen-container">
@@ -126,8 +167,7 @@ function AssetScreen({ assets, setAssets, onNext, onBack, isEdit, onEditComplete
       <main>
         <div className="total-display">
           <div className="label">총 자산</div>
-          <div className="amount">{totalAssets > 0 ? `${formatNumber(totalAssets)}원` : '0원'}</div>
-          <div className="korean-unit" style={{fontSize:'16px'}}>{numberToKorean(totalAssets)}</div>
+          <div className="amount">{numberToKoreanDisplay(totalAssets) || '0원'}</div>
         </div>
 
         <div className="form-group">
@@ -140,13 +180,13 @@ function AssetScreen({ assets, setAssets, onNext, onBack, isEdit, onEditComplete
                     type="text"
                     inputMode="numeric"
                     placeholder={placeholder}
-                    value={assets[id] ? formatNumber(assets[id]) : ''}
+                    value={getDisplayValue(assets[id])}
                     onChange={(e) => handleAssetChange(id, e.target.value)}
                     ref={id === 'cash' ? cashInputRef : null}
                   />
                 </div>
               </div>
-              <div className="korean-unit">{numberToKorean(assets[id])}</div>
+              <div className="korean-unit">{numberToKoreanDisplay(assets[id])}</div>
             </div>
           ))}
         </div>

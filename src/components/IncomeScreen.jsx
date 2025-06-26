@@ -16,9 +16,9 @@ function IncomeScreen({ incomes, setIncomes, onNext, onBack, isEdit, onEditCompl
   }, []);
 
   const handleIncomeChange = (id, value) => {
-    const cleanValue = value.replace(/원/g, '').replace(/[^0-9]/g, '');
-    let numericValue = cleanValue === '' ? 0 : Number(cleanValue);
-    if (numericValue >= 100000000000) numericValue = 99999999999;
+    const cleanValue = value.replace(/[^0-9]/g, '');
+    let numericValue = cleanValue === '' ? 0 : Number(cleanValue) * 10000; // 10,000원 단위로 저장
+    if (numericValue >= 100000000000000) return; // 1조 제한 (입력 차단)
     setIncomes(prev => ({ ...prev, [id]: numericValue }));
   };
 
@@ -29,9 +29,49 @@ function IncomeScreen({ incomes, setIncomes, onNext, onBack, isEdit, onEditCompl
   const isNextDisabled = totalIncome === 0;
   const hasInput = Object.values(incomes).some(value => value > 0);
 
+  // 입력용 표시 값 (만원 단위) - 콤마 포함
+  const getDisplayValue = (value) => {
+    if (!value || value === 0) return '';
+    const manWon = Math.floor(value / 10000);
+    return manWon.toLocaleString('ko-KR');
+  };
+
+  // 한글 단위 표시 (만원 단위)
+  const numberToKoreanDisplay = (num) => {
+    if (typeof num !== 'number' || isNaN(num) || num === 0) return '0원';
+    const manWon = Math.floor(num / 10000);
+    
+    // 조 단위 (1조 = 1,000,000만원)
+    if (manWon >= 100000000) {
+      const jo = Math.floor(manWon / 100000000);
+      const remainEok = Math.floor((manWon % 100000000) / 10000);
+      const remainMan = manWon % 10000;
+      let result = `${jo.toLocaleString('ko-KR')}조`;
+      if (remainEok > 0) {
+        result += `${remainEok.toLocaleString('ko-KR')}억`;
+      }
+      if (remainMan > 0) {
+        result += `${remainMan.toLocaleString('ko-KR')}만`;
+      }
+      return result + '원';
+    }
+    // 억 단위
+    else if (manWon >= 10000) {
+      const eok = Math.floor(manWon / 10000);
+      const remainMan = manWon % 10000;
+      if (remainMan === 0) {
+        return `${eok.toLocaleString('ko-KR')}억원`;
+      } else {
+        return `${eok.toLocaleString('ko-KR')}억${remainMan.toLocaleString('ko-KR')}만원`;
+      }
+    } else {
+      return `${manWon.toLocaleString('ko-KR')}만원`;
+    }
+  };
+
   const incomeTypes = [
     { id: 'salary', label: '연봉', placeholder: '연봉을 적어주세요' },
-    { id: 'bonus', label: '상여', placeholder: '상여금 적어주세요 (없으면 빈칸)' },
+    { id: 'bonus', label: '상여', placeholder: '상여금 적어주세요' },
     { id: 'side', label: '부수입', placeholder: '부수입 적어주세요' },
     { id: 'other', label: '기타', placeholder: '기타 소득 적어주세요' },
   ];
@@ -119,8 +159,7 @@ function IncomeScreen({ incomes, setIncomes, onNext, onBack, isEdit, onEditCompl
       <main>
         <div className="total-display">
           <div className="label">총 소득</div>
-          <div className="amount">{totalIncome > 0 ? `${formatNumber(totalIncome)}원` : '0원'}</div>
-          <div className="korean-unit" style={{fontSize:'16px'}}>{numberToKorean(totalIncome)}</div>
+          <div className="amount">{numberToKoreanDisplay(totalIncome)}</div>
         </div>
         <div className="form-group">
           {incomeTypes.map(({ id, label, placeholder }) => (
@@ -132,13 +171,13 @@ function IncomeScreen({ incomes, setIncomes, onNext, onBack, isEdit, onEditCompl
                     type="text"
                     inputMode="numeric"
                     placeholder={placeholder}
-                    value={incomes[id] ? formatNumber(incomes[id]) : ''}
+                    value={getDisplayValue(incomes[id])}
                     onChange={(e) => handleIncomeChange(id, e.target.value)}
                     ref={id === 'salary' ? salaryInputRef : null}
                   />
                 </div>
               </div>
-              <div className="korean-unit">{numberToKorean(incomes[id])}</div>
+              <div className="korean-unit">{incomes[id] > 0 ? numberToKoreanDisplay(incomes[id]) : ''}</div>
             </div>
           ))}
         </div>

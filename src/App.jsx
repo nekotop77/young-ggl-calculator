@@ -4,6 +4,7 @@ import AssetScreen from './components/AssetScreen';
 import IncomeScreen from './components/IncomeScreen';
 import LoanScreen from './components/LoanScreen';
 import ResultScreen from './components/ResultScreen';
+import LoadingScreen from './components/LoadingScreen';
 
 function App() {
   const [screen, setScreen] = useState('home'); // 'home', 'assets', 'income', 'loan', 'result', etc.
@@ -53,7 +54,19 @@ function App() {
   };
 
   const handleLoanNext = () => {
-    setScreen('result');
+    setScreen('loading');
+    // 2초 후 결과 화면으로 이동
+    setTimeout(() => {
+      setScreen('result');
+    }, 2000);
+  };
+
+  const handleLoanEditComplete = () => {
+    setScreen('loading');
+    // 2초 후 결과 화면으로 이동
+    setTimeout(() => {
+      setScreen('result');
+    }, 2000);
   };
 
   const handleRestart = () => {
@@ -83,9 +96,11 @@ function App() {
       case 'income_edit':
         return <IncomeScreen incomes={incomes} setIncomes={setIncomes} onNext={handleIncomeNext} onBack={() => setScreen('assets')} isEdit={true} onEditComplete={() => setScreen('result')} />;
       case 'loan':
-        return <LoanScreen loan={loan} setLoan={setLoan} incomes={incomes} assets={assets} onBack={handleLoanBack} onNext={handleLoanNext} isEdit={false} onEditComplete={() => setScreen('result')} />;
+        return <LoanScreen loan={loan} setLoan={setLoan} incomes={incomes} assets={assets} onBack={handleLoanBack} onNext={handleLoanNext} isEdit={false} onEditComplete={handleLoanEditComplete} />;
       case 'loan_edit':
-        return <LoanScreen loan={loan} setLoan={setLoan} incomes={incomes} assets={assets} onBack={handleLoanBack} onNext={handleLoanNext} isEdit={true} onEditComplete={() => setScreen('result')} />;
+        return <LoanScreen loan={loan} setLoan={setLoan} incomes={incomes} assets={assets} onBack={handleLoanBack} onNext={handleLoanNext} isEdit={true} onEditComplete={handleLoanEditComplete} />;
+      case 'loading':
+        return <LoadingScreen />;
       case 'result':
         return <ResultScreen assets={assets} incomes={incomes} loan={loan} onRestart={handleRestart} onEdit={type => setScreen(type + '_edit')} />;
       case 'home':
