@@ -92,9 +92,9 @@ function App() {
       case 'assets_edit':
         return <AssetScreen assets={assets} setAssets={setAssets} onNext={handleAssetsNext} onBack={handleBackToHome} isEdit={true} onEditComplete={() => setScreen('result')} />;
       case 'income':
-        return <IncomeScreen incomes={incomes} setIncomes={setIncomes} onNext={handleIncomeNext} onBack={() => setScreen('assets')} isEdit={false} onEditComplete={() => setScreen('result')} />;
+        return <IncomeScreen incomes={incomes} setIncomes={setIncomes} onNext={handleIncomeNext} onBack={() => setScreen('assets')} isEdit={false} onEditComplete={() => setScreen('result')} loan={loan} />;
       case 'income_edit':
-        return <IncomeScreen incomes={incomes} setIncomes={setIncomes} onNext={handleIncomeNext} onBack={() => setScreen('assets')} isEdit={true} onEditComplete={() => setScreen('result')} />;
+        return <IncomeScreen incomes={incomes} setIncomes={setIncomes} onNext={handleIncomeNext} onBack={() => setScreen('assets')} isEdit={true} onEditComplete={() => setScreen('result')} loan={loan} />;
       case 'loan':
         return <LoanScreen loan={loan} setLoan={setLoan} incomes={incomes} assets={assets} onBack={handleLoanBack} onNext={handleLoanNext} isEdit={false} onEditComplete={handleLoanEditComplete} />;
       case 'loan_edit':
