@@ -138,21 +138,89 @@ function ResultScreen({ assets, incomes, loan, onRestart, onEdit }) {
     const dsrBasedMaxLoan = (() => {
       if (!totalIncome || !loan.years || !loan.rate) return 0;
       
-      const monthlyIncome = totalIncome / 12;
-      const maxMonthlyPayment = monthlyIncome * 0.4; // DSR 40%
+      // 금융기관별 DSR 한도 적용
+      const dsrLimit = loan.finance === '50' ? 0.5 : 0.4; // 제2금융기관 50%, 제1금융기관 40%
+      const income = totalIncome;
+      const annualRate = loan.rate;
+      const years = loan.years;
+      const loanType = loan.loanType;
       
-      // 원리금균등 방식으로 최대 대출 가능 금액 역산
-      const monthlyRate = loan.rate / 100 / 12;
-      const totalMonths = loan.years * 12;
+      const monthlyRate = annualRate / 100 / 12;
+      const totalMonths = years * 12;
       
-      if (monthlyRate === 0) {
-        return maxMonthlyPayment * totalMonths;
+      // 대출 종류별로 DSR 40% 한도에 맞는 대출 금액 계산
+      switch (loanType) {
+        case '원리금균등': {
+          // 원리금균등: PMT = P * [r(1+r)^n] / [(1+r)^n - 1]
+          // P = PMT * [(1+r)^n - 1] / [r(1+r)^n]
+          const maxAnnualPayment = income * dsrLimit;
+          const maxMonthlyPayment = maxAnnualPayment / 12;
+          
+          if (monthlyRate === 0) {
+            return maxMonthlyPayment * totalMonths;
+          }
+          
+          const factor = Math.pow(1 + monthlyRate, totalMonths);
+          return maxMonthlyPayment * (factor - 1) / (monthlyRate * factor);
+        }
+        case '원금균등': {
+          // 원금균등: 연간 평균 상환액 기준으로 역산
+          const maxAnnualPayment = income * dsrLimit;
+          
+          // 이진 탐색으로 최대 대출 금액 찾기
+          let low = 0;
+          let high = income * 20; // 적당한 상한선
+          let result = 0;
+          
+          while (high - low > 10000) { // 만원 단위까지
+            const mid = Math.floor((low + high) / 2);
+            const monthlyPrincipal = mid / totalMonths;
+            const firstMonthInterest = mid * monthlyRate;
+            const lastMonthInterest = monthlyPrincipal * monthlyRate;
+            const averageInterest = (firstMonthInterest + lastMonthInterest) / 2;
+            const averageMonthlyPayment = monthlyPrincipal + averageInterest;
+            const annualPayment = averageMonthlyPayment * 12;
+            
+            if (annualPayment <= maxAnnualPayment) {
+              result = mid;
+              low = mid;
+            } else {
+              high = mid;
+            }
+          }
+          return result;
+        }
+        case '체증식': {
+          // 체증식: 원리금균등과 동일
+          const maxAnnualPayment = income * dsrLimit;
+          const maxMonthlyPayment = maxAnnualPayment / 12;
+          
+          if (monthlyRate === 0) {
+            return maxMonthlyPayment * totalMonths;
+          }
+          
+          const factor = Math.pow(1 + monthlyRate, totalMonths);
+          return maxMonthlyPayment * (factor - 1) / (monthlyRate * factor);
+        }
+        case '만기일시': {
+          // 만기일시상환: 스트레스 금리 적용
+          const stressFactor = 1.825;
+          const maxAnnualPayment = income * dsrLimit;
+          return maxAnnualPayment / (annualRate / 100) / stressFactor;
+        }
+        default: {
+          // 기본값: 원리금균등
+          const maxAnnualPayment = income * dsrLimit;
+          const maxMonthlyPayment = maxAnnualPayment / 12;
+          
+          if (monthlyRate === 0) {
+            return maxMonthlyPayment * totalMonths;
+          }
+          
+          const factor = Math.pow(1 + monthlyRate, totalMonths);
+          return maxMonthlyPayment * (factor - 1) / (monthlyRate * factor);
+        }
       }
-      
-      // PMT = P * [r(1+r)^n] / [(1+r)^n - 1]
-      // P = PMT * [(1+r)^n - 1] / [r(1+r)^n]
-      const factor = Math.pow(1 + monthlyRate, totalMonths);
-      return maxMonthlyPayment * (factor - 1) / (monthlyRate * factor);
     })();
     
     // LTV 기준으로 계산된 최대 집값과 대출 가능 금액
@@ -199,15 +267,59 @@ function ResultScreen({ assets, incomes, loan, onRestart, onEdit }) {
   const actualDsr = useMemo(() => {
     if (!totalIncome || !loan.years || !loan.rate || !calculations.actualLoan) return 0;
     
-    const monthlyRate = loan.rate / 100 / 12;
-    const totalMonths = loan.years * 12;
+    const principal = calculations.actualLoan;
+    const annualRate = loan.rate;
+    const years = loan.years;
+    const loanType = loan.loanType;
+    
+    const monthlyRate = annualRate / 100 / 12;
+    const totalMonths = years * 12;
     
     let actualMonthlyPayment;
-    if (monthlyRate === 0) {
-      actualMonthlyPayment = calculations.actualLoan / totalMonths;
-    } else {
-      const factor = Math.pow(1 + monthlyRate, totalMonths);
-      actualMonthlyPayment = calculations.actualLoan * (monthlyRate * factor) / (factor - 1);
+    
+    switch (loanType) {
+      case '원리금균등': {
+        if (monthlyRate === 0) {
+          actualMonthlyPayment = principal / totalMonths;
+        } else {
+          const factor = Math.pow(1 + monthlyRate, totalMonths);
+          actualMonthlyPayment = principal * (monthlyRate * factor) / (factor - 1);
+        }
+        break;
+      }
+      case '원금균등': {
+        // 원금균등: DSR 계산 시 연간 평균 상환액 사용
+        const monthlyPrincipal = principal / totalMonths;
+        const firstMonthInterest = principal * monthlyRate;
+        const lastMonthInterest = monthlyPrincipal * monthlyRate;
+        const averageInterest = (firstMonthInterest + lastMonthInterest) / 2;
+        actualMonthlyPayment = monthlyPrincipal + averageInterest;
+        break;
+      }
+      case '체증식': {
+        if (monthlyRate === 0) {
+          actualMonthlyPayment = principal / totalMonths;
+        } else {
+          const factor = Math.pow(1 + monthlyRate, totalMonths);
+          actualMonthlyPayment = principal * (monthlyRate * factor) / (factor - 1);
+        }
+        break;
+      }
+      case '만기일시': {
+        // 만기일시상환: DSR 계산 시 스트레스 금리 적용
+        const stressFactor = 1.825;
+        actualMonthlyPayment = (principal * monthlyRate * stressFactor);
+        break;
+      }
+      default: {
+        if (monthlyRate === 0) {
+          actualMonthlyPayment = principal / totalMonths;
+        } else {
+          const factor = Math.pow(1 + monthlyRate, totalMonths);
+          actualMonthlyPayment = principal * (monthlyRate * factor) / (factor - 1);
+        }
+        break;
+      }
     }
     
     const monthlyIncome = totalIncome / 12;
@@ -217,14 +329,63 @@ function ResultScreen({ assets, incomes, loan, onRestart, onEdit }) {
   const actualMonthlyPayment = useMemo(() => {
     if (!loan.years || !loan.rate || !calculations.actualLoan) return 0;
     
-    const monthlyRate = loan.rate / 100 / 12;
-    const totalMonths = loan.years * 12;
+    const principal = calculations.actualLoan;
+    const annualRate = loan.rate;
+    const years = loan.years;
+    const loanType = loan.loanType;
     
-    if (monthlyRate === 0) {
-      return calculations.actualLoan / totalMonths;
-    } else {
-      const factor = Math.pow(1 + monthlyRate, totalMonths);
-      return calculations.actualLoan * (monthlyRate * factor) / (factor - 1);
+    const monthlyRate = annualRate / 100 / 12;
+    const totalMonths = years * 12;
+    
+    console.log(`A05 월납입 계산:`, {
+      principal,
+      annualRate,
+      years,
+      loanType,
+      monthlyRate,
+      totalMonths
+    });
+    
+    switch (loanType) {
+      case '원리금균등': {
+        // 원리금균등 월납입 계산 공식
+        if (monthlyRate === 0) {
+          return principal / totalMonths;
+        } else {
+          const factor = Math.pow(1 + monthlyRate, totalMonths);
+          return principal * (monthlyRate * factor) / (factor - 1);
+        }
+      }
+      case '원금균등': {
+        // 원금균등: 첫 달과 마지막 달의 평균
+        const monthlyPrincipal = principal / totalMonths;
+        const firstMonthInterest = principal * monthlyRate;
+        const lastMonthInterest = monthlyPrincipal * monthlyRate;
+        const averageInterest = (firstMonthInterest + lastMonthInterest) / 2;
+        return monthlyPrincipal + averageInterest;
+      }
+      case '체증식': {
+        // 체증식: 원리금균등과 동일하게 계산
+        if (monthlyRate === 0) {
+          return principal / totalMonths;
+        } else {
+          const factor = Math.pow(1 + monthlyRate, totalMonths);
+          return principal * (monthlyRate * factor) / (factor - 1);
+        }
+      }
+      case '만기일시': {
+        // 만기일시상환: 매월 이자만 납입 (DSR 계산과 달리 실제 월납입은 스트레스 금리 미적용)
+        return principal * monthlyRate;
+      }
+      default: {
+        // 기본값: 원리금균등
+        if (monthlyRate === 0) {
+          return principal / totalMonths;
+        } else {
+          const factor = Math.pow(1 + monthlyRate, totalMonths);
+          return principal * (monthlyRate * factor) / (factor - 1);
+        }
+      }
     }
   }, [loan, calculations.actualLoan]);
   
@@ -240,8 +401,9 @@ function ResultScreen({ assets, incomes, loan, onRestart, onEdit }) {
       <main>
         {/* 드롭다운 */}
         <div style={{ 
-          textAlign: 'center',
-          marginBottom: '1.5rem'
+          textAlign: 'left',
+          marginBottom: '1.5rem',
+          marginTop: '10px'
         }}>
           <div style={{ 
             position: 'relative', 
@@ -263,7 +425,7 @@ function ResultScreen({ assets, incomes, loan, onRestart, onEdit }) {
               border: 'none', 
               appearance: 'none',
               paddingRight: '2rem',
-              textAlign: 'center'
+              textAlign: 'left'
             }}
           >
             {ltvOptions.map(opt => (
@@ -283,7 +445,7 @@ function ResultScreen({ assets, incomes, loan, onRestart, onEdit }) {
         </div>
 
         {/* 집 가격 표시 */}
-        <div style={{textAlign:'center', marginBottom:'2rem'}}>
+        <div style={{textAlign:'left', marginBottom:'2rem'}}>
           <div style={{
             fontSize:'2.2rem', 
             color:'#62BBFF', 
@@ -312,11 +474,11 @@ function ResultScreen({ assets, incomes, loan, onRestart, onEdit }) {
                 borderRadius: '8px',
                 border: '1px solid rgba(255, 165, 0, 0.3)'
               }}>
-                <div style={{color: '#FFA500', fontSize: '0.9rem', fontWeight: 500, marginBottom: '0.3rem'}}>
-                  소득 비율때문에 LTV가 남아요!
+                <div style={{color: '#FFA500', fontSize: '14px', marginBottom: '0.3rem'}}>
+                  소득을 늘리면 더 비싼 집을 살 수 있어요
                 </div>
-                <div style={{color: '#FFA500', fontSize: '0.85rem'}}>
-                  자산으로 살수있는 최대치는 <strong>{numberToKoreanDisplay(calculations.maxHousePriceByLtv)}</strong>입니다
+                <div style={{color: '#FFA500', fontSize: '14px'}}>
+                  자산으로 살 수 있는 최대치는 <strong>{numberToKoreanDisplay(calculations.maxHousePriceByLtv)}</strong> 입니다
                 </div>
               </div>
             )}
@@ -324,14 +486,8 @@ function ResultScreen({ assets, incomes, loan, onRestart, onEdit }) {
 
           {/* 대출 카드 */}
           <div className="input-card">
-            <div className="label">대출</div>
-            
-            <div style={{fontSize:'1rem', color:'#fff', marginBottom:'0.3rem'}}>
-              {loan.finance === '40' ? '제1금융기관' : '제2금융기관'} / {loan.loanType} / {loan.years}년 / {loan.rate}%
-            </div>
-            
-            <div style={{fontWeight:700,fontSize:'1.1rem',color:'#fff', marginBottom:'0.3rem', display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
-              <span>{numberToKoreanDisplay(calculations.actualLoan)}</span>
+            <div className="label" style={{display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
+              대출
               <span style={{
                 backgroundColor: 'rgba(98, 187, 255, 0.15)',
                 color: '#62BBFF',
@@ -344,6 +500,24 @@ function ResultScreen({ assets, incomes, loan, onRestart, onEdit }) {
                 DSR {actualDsr.toFixed(1)}%
               </span>
             </div>
+            
+            <div style={{fontSize:'14px', color:'#fff', marginBottom:'0.3rem'}}>
+              {loan.finance === '40' ? '제1금융기관' : '제2금융기관'} / {loan.loanType} / {loan.years}년 / {loan.rate}%
+            </div>
+            
+            <div style={{fontWeight:700,fontSize:'1.1rem',color:'#fff', marginBottom:'0.3rem'}}>
+              {numberToKoreanDisplay(calculations.actualLoan)}
+            </div>
+            {actualMonthlyPayment > 0 && (
+              <div style={{
+                fontSize: '14px',
+                color: '#A1A2B0',
+                fontWeight: 500,
+                marginBottom: '0.3rem'
+              }}>
+                월납입 {numberToKoreanDisplay(actualMonthlyPayment)}
+              </div>
+            )}
 
             {/* LTV 제한으로 인해 DSR이 남는 경우 안내 메시지 표시 */}
             {calculations.isLtvLimited && (
@@ -354,11 +528,11 @@ function ResultScreen({ assets, incomes, loan, onRestart, onEdit }) {
                 borderRadius: '8px',
                 border: '1px solid rgba(255, 165, 0, 0.3)'
               }}>
-                <div style={{color: '#FFA500', fontSize: '0.9rem', fontWeight: 500, marginBottom: '0.3rem'}}>
-                  자산 비율때문에 DSR이 남아요!
+                <div style={{color: '#FFA500', fontSize: '14px', marginBottom: '0.3rem'}}>
+                  자산을 늘리면 DSR을 더 쓸수 있어요
                 </div>
-                <div style={{color: '#FFA500', fontSize: '0.85rem'}}>
-                  대출 최대치 <strong>{numberToKoreanDisplay(calculations.dsrBasedMaxLoan)}</strong>입니다
+                <div style={{color: '#FFA500', fontSize: '14px'}}>
+                  소득 대비 대출 최대치는 <strong>{numberToKoreanDisplay(loan.loanAmount || 0)}</strong>입니다
                 </div>
               </div>
             )}
