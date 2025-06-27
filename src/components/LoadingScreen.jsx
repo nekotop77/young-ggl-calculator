@@ -1,51 +1,70 @@
 import React from 'react';
 
-function LoadingScreen() {
+const LoadingScreen = () => {
   return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      width: '100vw',
-      height: '100vh',
-      background: 'linear-gradient(135deg, #2D1B69 0%, #1A0E42 50%, #0F0624 100%)',
+    <div className="screen-container" style={{
       display: 'flex',
       flexDirection: 'column',
       justifyContent: 'center',
       alignItems: 'center',
-      zIndex: 9999,
-      fontFamily: 'Pretendard, -apple-system, BlinkMacSystemFont, sans-serif'
+      height: '100vh',
+      textAlign: 'center'
     }}>
+      {/* 점 3개 애니메이션 */}
       <div style={{
-        textAlign: 'center',
-        color: '#ffffff'
+        display: 'flex',
+        gap: '0.5rem',
+        marginBottom: '2rem'
       }}>
         <div style={{
-          fontSize: 'clamp(1.5rem, 6vw, 2rem)',
-          fontWeight: 500,
-          marginBottom: '0.5rem',
-          letterSpacing: '-0.5px'
-        }}>
-          내집마련
-        </div>
+          width: '12px',
+          height: '12px',
+          borderRadius: '50%',
+          backgroundColor: '#fff',
+          animation: 'loadingBlink 1.5s infinite',
+          animationDelay: '0s'
+        }}></div>
         <div style={{
-          fontSize: 'clamp(1.5rem, 6vw, 2rem)',
-          fontWeight: 500,
-          marginBottom: '1rem',
-          letterSpacing: '-0.5px'
-        }}>
-          얼마까지 가능할까?
-        </div>
+          width: '12px',
+          height: '12px',
+          borderRadius: '50%',
+          backgroundColor: '#fff',
+          animation: 'loadingBlink 1.5s infinite',
+          animationDelay: '0.5s'
+        }}></div>
         <div style={{
-          fontSize: 'clamp(2.5rem, 10vw, 3.5rem)',
-          fontWeight: 700,
-          letterSpacing: '-1px'
-        }}>
-          영끌 계산기
-        </div>
+          width: '12px',
+          height: '12px',
+          borderRadius: '50%',
+          backgroundColor: '#fff',
+          animation: 'loadingBlink 1.5s infinite',
+          animationDelay: '1s'
+        }}></div>
       </div>
+
+      {/* 로딩 텍스트 */}
+      <div style={{
+        fontSize: 'clamp(1.25rem, 4vw, 1.5rem)',
+        fontWeight: '700',
+        color: '#fff',
+        lineHeight: '1.4',
+        marginBottom: '1rem'
+      }}>
+        잠시 기다려주세요
+      </div>
+      <div style={{
+        fontSize: 'clamp(1rem, 3vw, 1.125rem)',
+        fontWeight: '400',
+        color: 'rgba(255, 255, 255, 0.7)',
+        lineHeight: '1.5'
+      }}>
+        살 수있는 집 담보 비율에 맞게<br />
+        대출을 다시 계산하고 있어요
+      </div>
+
+
     </div>
   );
-}
+};
 
 export default LoadingScreen; 
