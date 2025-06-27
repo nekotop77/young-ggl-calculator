@@ -157,9 +157,24 @@ function IncomeScreen({ incomes, setIncomes, onNext, onBack, isEdit, onEditCompl
         </button>
       </header>
       <main>
-        <div className="total-display">
-          <div className="label">총 소득</div>
-          <div className="amount">{numberToKoreanDisplay(totalIncome)}</div>
+        <div style={{textAlign:'left', marginBottom:'2rem'}}>
+          <div style={{
+            fontSize: 'clamp(0.875rem, 3vw, 1rem)',
+            color: '#A1A2B0',
+            fontWeight: 500,
+            marginBottom: '0.5rem'
+          }}>
+            소득 <span style={{color: '#ffffff', fontWeight: 700}}>{numberToKoreanDisplay(totalIncome)}</span> 기준
+          </div>
+          <div style={{
+            fontSize: 'clamp(2rem, 8vw, 2.2rem)', 
+            color: '#ffffff', 
+            fontWeight: 700, 
+            letterSpacing: '-1px',
+            marginBottom: '0.5rem'
+          }}>
+            {numberToKoreanDisplay(totalIncome)}
+          </div>
           {loan && loan.dsrCalculated && loan.dsr > 0 && (
             <div style={{ 
               fontSize: '14px', 
@@ -169,7 +184,7 @@ function IncomeScreen({ incomes, setIncomes, onNext, onBack, isEdit, onEditCompl
               backgroundColor: 'rgba(98, 187, 255, 0.15)',
               borderRadius: '8px',
               display: 'inline-block',
-              marginTop: '8px',
+              marginTop: '4px',
             }}>
               DSR {loan.dsr}%
             </div>

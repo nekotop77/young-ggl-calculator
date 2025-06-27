@@ -376,20 +376,27 @@ function LoanScreen({ loan, setLoan, incomes, assets, onBack, onNext, isEdit, on
           <div className="label" style={{marginBottom: '0.5rem'}}>
             소득 <span style={{color: '#ffffff', fontWeight: 700}}>{numberToKoreanDisplay(totalIncome)}</span> 기준
           </div>
-          <div className="amount" style={{fontSize:'2.1rem', letterSpacing:'-1px', marginBottom: '0.3rem'}}>
-            {(dsrCalculated || (isEdit && loan.dsrCalculated && loan.loanAmount)) ? 
-              numberToKoreanDisplay(loan.loanAmount) : '0원'}
-          </div>
-          {((dsrCalculated && monthlyPayment > 0) || (isEdit && loan.dsrCalculated && loan.monthlyPayment > 0)) && (
-            <div style={{ 
-              fontSize: '14px', 
-              color: '#A1A2B0', 
-              fontWeight: 500,
-              marginBottom: '0.3rem'
-            }}>
-              월납입 {numberToKoreanDisplay(monthlyPayment || loan.monthlyPayment)}
+          <div style={{
+            display: 'flex',
+            alignItems: 'baseline',
+            gap: '6px',
+            marginBottom: '0.3rem'
+          }}>
+            <div style={{fontSize:'2.1rem', letterSpacing:'-1px', fontWeight: 700}}>
+              {(dsrCalculated || (isEdit && loan.dsrCalculated && loan.loanAmount)) ? 
+                numberToKoreanDisplay(loan.loanAmount) : '0원'}
             </div>
-          )}
+            {((dsrCalculated && monthlyPayment > 0) || (isEdit && loan.dsrCalculated && loan.monthlyPayment > 0)) && (
+              <div style={{ 
+                fontSize: 'clamp(12px, 4vw, 16pt)', 
+                color: '#A1A2B0', 
+                fontWeight: 500,
+                whiteSpace: 'nowrap'
+              }}>
+                월납입 {numberToKoreanDisplay(monthlyPayment || loan.monthlyPayment)}
+              </div>
+            )}
+          </div>
           {((dsrCalculated && dsr > 0) || (isEdit && loan.dsrCalculated && loan.dsr > 0)) && (
             <div style={{ 
               fontSize: '14px', 

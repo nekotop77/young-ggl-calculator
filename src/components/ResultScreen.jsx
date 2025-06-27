@@ -486,36 +486,47 @@ function ResultScreen({ assets, incomes, loan, onRestart, onEdit }) {
 
           {/* 대출 카드 */}
           <div className="input-card">
-            <div className="label" style={{display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
-              대출
-              <span style={{
-                backgroundColor: 'rgba(98, 187, 255, 0.15)',
-                color: '#62BBFF',
-                fontSize: '0.75rem',
-                fontWeight: 600,
-                padding: '0.2rem 0.5rem',
-                borderRadius: '12px',
-                whiteSpace: 'nowrap'
-              }}>
-                DSR {actualDsr.toFixed(1)}%
-              </span>
-            </div>
+            <div className="label">대출</div>
             
             <div style={{fontSize:'14px', color:'#fff', marginBottom:'0.3rem'}}>
               {loan.finance === '40' ? '제1금융기관' : '제2금융기관'} / {loan.loanType} / {loan.years}년 / {loan.rate}%
             </div>
             
-            <div style={{fontWeight:700,fontSize:'1.1rem',color:'#fff', marginBottom:'0.3rem'}}>
-              {numberToKoreanDisplay(calculations.actualLoan)}
+            <div style={{
+              display: 'flex',
+              alignItems: 'baseline',
+              gap: '8px',
+              marginBottom: '0.3rem'
+            }}>
+              <div style={{fontWeight:700,fontSize:'1.1rem',color:'#fff'}}>
+                {numberToKoreanDisplay(calculations.actualLoan)}
+              </div>
+              {actualMonthlyPayment > 0 && (
+                <div style={{
+                  fontSize: 'clamp(12px, 4vw, 16px)',
+                  color: '#A1A2B0',
+                  fontWeight: 500,
+                  whiteSpace: 'nowrap'
+                }}>
+                  월납입 {numberToKoreanDisplay(actualMonthlyPayment)}
+                </div>
+              )}
             </div>
             {actualMonthlyPayment > 0 && (
               <div style={{
-                fontSize: '14px',
-                color: '#A1A2B0',
-                fontWeight: 500,
                 marginBottom: '0.3rem'
               }}>
-                월납입 {numberToKoreanDisplay(actualMonthlyPayment)}
+                <span style={{
+                  fontSize: '14px',
+                  color: '#62BBFF',
+                  fontWeight: 500,
+                  padding: '4px 12px',
+                  backgroundColor: 'rgba(98, 187, 255, 0.15)',
+                  borderRadius: '8px',
+                  display: 'inline-block',
+                }}>
+                  DSR {actualDsr.toFixed(1)}%
+                </span>
               </div>
             )}
 
