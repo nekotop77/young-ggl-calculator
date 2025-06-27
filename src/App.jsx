@@ -1,13 +1,26 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import HomeScreen from './components/HomeScreen';
 import AssetScreen from './components/AssetScreen';
 import IncomeScreen from './components/IncomeScreen';
 import LoanScreen from './components/LoanScreen';
 import ResultScreen from './components/ResultScreen';
 import LoadingScreen from './components/LoadingScreen';
+import SplashScreen from './components/SplashScreen';
 
 function App() {
-  const [screen, setScreen] = useState('home'); // 'home', 'assets', 'income', 'loan', 'result', etc.
+  const [screen, setScreen] = useState('splash'); // 'splash', 'home', 'assets', 'income', 'loan', 'result', etc.
+  
+  // 스플래시 화면 타이머
+  useEffect(() => {
+    if (screen === 'splash') {
+      const timer = setTimeout(() => {
+        setScreen('home');
+      }, 2000); // 2초 후 홈화면으로 이동
+      
+      return () => clearTimeout(timer);
+    }
+  }, [screen]);
+
   // 자산 입력값
   const [assets, setAssets] = useState({
     cash: 0,
@@ -87,6 +100,8 @@ function App() {
   // 현재 화면 상태에 따라 적절한 컴포넌트를 렌더링
   const renderScreen = () => {
     switch (screen) {
+      case 'splash':
+        return <SplashScreen />;
       case 'assets':
         return <AssetScreen assets={assets} setAssets={setAssets} onNext={handleAssetsNext} onBack={handleBackToHome} isEdit={false} onEditComplete={() => setScreen('result')} />;
       case 'assets_edit':
