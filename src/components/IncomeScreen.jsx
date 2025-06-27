@@ -8,6 +8,7 @@ const BackIcon = () => (
 
 function IncomeScreen({ incomes, setIncomes, onNext, onBack, isEdit, onEditComplete, loan }) {
   const salaryInputRef = useRef(null);
+  const ctaButtonRef = useRef(null);
 
   useEffect(() => {
     if (salaryInputRef.current) {
@@ -134,6 +135,15 @@ function IncomeScreen({ incomes, setIncomes, onNext, onBack, isEdit, onEditCompl
     return sign + result;
   };
 
+  const handleKeyPress = (e, isLastField = false) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (isLastField && ctaButtonRef.current) {
+        ctaButtonRef.current.focus();
+      }
+    }
+  };
+
   return (
     <div className="screen-container">
       <header className="screen-header">
@@ -189,6 +199,7 @@ function IncomeScreen({ incomes, setIncomes, onNext, onBack, isEdit, onEditCompl
                     value={getDisplayValue(incomes[id])}
                     onChange={(e) => handleIncomeChange(id, e.target.value)}
                     ref={id === 'salary' ? salaryInputRef : null}
+                    onKeyDown={(e) => handleKeyPress(e, id === 'other')}
                   />
                 </div>
               </div>
@@ -200,6 +211,7 @@ function IncomeScreen({ incomes, setIncomes, onNext, onBack, isEdit, onEditCompl
       
       <div className="fixed-bottom-container">
         <button
+          ref={ctaButtonRef}
           className="bottom-button"
           disabled={isNextDisabled}
           onClick={isEdit ? onEditComplete : onNext}

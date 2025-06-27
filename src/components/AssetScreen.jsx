@@ -79,12 +79,22 @@ const assetTypes = [
 
 function AssetScreen({ assets, setAssets, onNext, onBack, isEdit, onEditComplete }) {
   const cashInputRef = useRef(null);
+  const ctaButtonRef = useRef(null);
 
   useEffect(() => {
     if (cashInputRef.current) {
       cashInputRef.current.focus();
     }
   }, []);
+
+  const handleKeyPress = (e, isLastField = false) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (isLastField && ctaButtonRef.current) {
+        ctaButtonRef.current.focus();
+      }
+    }
+  };
 
   const handleAssetChange = (id, value) => {
     // "원" 제거 후 숫자만 추출
@@ -183,6 +193,7 @@ function AssetScreen({ assets, setAssets, onNext, onBack, isEdit, onEditComplete
                     value={getDisplayValue(assets[id])}
                     onChange={(e) => handleAssetChange(id, e.target.value)}
                     ref={id === 'cash' ? cashInputRef : null}
+                    onKeyDown={(e) => handleKeyPress(e, id === 'insurance')}
                   />
                 </div>
               </div>
@@ -194,6 +205,7 @@ function AssetScreen({ assets, setAssets, onNext, onBack, isEdit, onEditComplete
 
       <div className="fixed-bottom-container">
         <button
+          ref={ctaButtonRef}
           className="bottom-button"
           disabled={isNextDisabled}
           onClick={isEdit ? onEditComplete : onNext}
