@@ -8,18 +8,28 @@ import LoadingScreen from './components/LoadingScreen';
 import SplashScreen from './components/SplashScreen';
 
 function App() {
-  const [screen, setScreen] = useState('splash'); // 'splash', 'home', 'assets', 'income', 'loan', 'result', etc.
+  const [screen, setScreen] = useState('home'); // 기본적으로 홈화면부터 시작
+  const [showSplash, setShowSplash] = useState(true);
+  const [appReady, setAppReady] = useState(false);
   
-  // 스플래시 화면 타이머
+  // 앱 로딩 상태 관리
   useEffect(() => {
-    if (screen === 'splash') {
-      const timer = setTimeout(() => {
-        setScreen('home');
-      }, 2000); // 2초 후 홈화면으로 이동
-      
-      return () => clearTimeout(timer);
-    }
-  }, [screen]);
+    // 앱이 준비되었음을 표시하는 타이머 (실제로는 필요한 리소스 로딩 완료를 체크)
+    const readyTimer = setTimeout(() => {
+      setAppReady(true);
+      setShowSplash(false);
+    }, 500); // 0.5초 내에 로딩되면 스플래시 건너뛰기
+    
+    // 스플래시 최대 표시 시간
+    const splashTimer = setTimeout(() => {
+      setShowSplash(false);
+    }, 2000); // 최대 2초까지 스플래시 표시
+    
+    return () => {
+      clearTimeout(readyTimer);
+      clearTimeout(splashTimer);
+    };
+  }, []);
 
   // 자산 입력값
   const [assets, setAssets] = useState({
@@ -99,9 +109,12 @@ function App() {
 
   // 현재 화면 상태에 따라 적절한 컴포넌트를 렌더링
   const renderScreen = () => {
+    // 앱이 준비되지 않았고 스플래시를 보여줘야 하는 경우
+    if (!appReady && showSplash) {
+      return <SplashScreen />;
+    }
+    
     switch (screen) {
-      case 'splash':
-        return <SplashScreen />;
       case 'assets':
         return <AssetScreen assets={assets} setAssets={setAssets} onNext={handleAssetsNext} onBack={handleBackToHome} isEdit={false} onEditComplete={() => setScreen('result')} />;
       case 'assets_edit':

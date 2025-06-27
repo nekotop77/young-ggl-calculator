@@ -8,7 +8,7 @@ function SplashScreen() {
       left: 0,
       width: '100vw',
       height: '100vh',
-      background: 'linear-gradient(135deg, #2D1B69 0%, #1A0E42 50%, #0F0624 100%)',
+      backgroundColor: '#0D0E1C',
       display: 'flex',
       flexDirection: 'column',
       justifyContent: 'center',
@@ -17,8 +17,33 @@ function SplashScreen() {
       fontFamily: 'Pretendard, -apple-system, BlinkMacSystemFont, sans-serif'
     }}>
       <div style={{
+        position: 'absolute',
+        width: '300px',
+        height: '300px',
+        backgroundColor: 'rgba(60, 76, 255, 0.2)',
+        borderRadius: '50%',
+        filter: 'blur(100px)',
+        top: '-100px',
+        right: '10%',
+        zIndex: 0
+      }} />
+      <div style={{
+        position: 'absolute',
+        width: '250px',
+        height: '250px',
+        backgroundColor: 'rgba(197, 37, 251, 0.2)',
+        borderRadius: '50%',
+        filter: 'blur(100px)',
+        bottom: '-80px',
+        left: '10%',
+        zIndex: 0
+      }} />
+      
+      <div style={{
         textAlign: 'center',
-        color: '#ffffff'
+        color: '#ffffff',
+        position: 'relative',
+        zIndex: 1
       }}>
         <div style={{
           fontSize: 'clamp(1.5rem, 6vw, 2rem)',

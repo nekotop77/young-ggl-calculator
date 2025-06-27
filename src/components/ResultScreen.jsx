@@ -357,11 +357,9 @@ function ResultScreen({ assets, incomes, loan, onRestart, onEdit }) {
         }
       }
       case '원금균등': {
-        // 원금균등: 첫 달과 마지막 달의 평균
+        // 원금균등: 평균 월납입 = P/n + P*r*(n+1)/(2*n)
         const monthlyPrincipal = principal / totalMonths;
-        const firstMonthInterest = principal * monthlyRate;
-        const lastMonthInterest = monthlyPrincipal * monthlyRate;
-        const averageInterest = (firstMonthInterest + lastMonthInterest) / 2;
+        const averageInterest = principal * monthlyRate * (totalMonths + 1) / (2 * totalMonths);
         return monthlyPrincipal + averageInterest;
       }
       case '체증식': {
@@ -396,7 +394,7 @@ function ResultScreen({ assets, incomes, loan, onRestart, onEdit }) {
     <div className="screen-container">
       <header className="screen-header">
         <button className="back-button" onClick={() => onEdit('loan')}><BackIcon /></button>
-        <h1 className="screen-title">내가 살 수 있는 집 가격은?</h1>
+        <h1 className="screen-title">영끌 계산 완료</h1>
       </header>
       <main>
         {/* 드롭다운 */}
@@ -486,7 +484,28 @@ function ResultScreen({ assets, incomes, loan, onRestart, onEdit }) {
 
           {/* 대출 카드 */}
           <div className="input-card">
-            <div className="label">대출</div>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              marginBottom: '0.3rem'
+            }}>
+              <div className="label">대출</div>
+              {actualMonthlyPayment > 0 && (
+                <span style={{
+                  fontSize: '14px',
+                  color: '#62BBFF',
+                  fontWeight: 500,
+                  padding: '4px 12px',
+                  backgroundColor: 'rgba(98, 187, 255, 0.15)',
+                  borderRadius: '25px',
+                  display: 'inline-block',
+                  transform: 'translateY(-4px)',
+                }}>
+                  DSR {actualDsr.toFixed(1)}%
+                </span>
+              )}
+            </div>
             
             <div style={{fontSize:'14px', color:'#fff', marginBottom:'0.3rem'}}>
               소득 {numberToKoreanDisplay(totalIncome)} / {loan.finance === '40' ? '제1금융기관' : '제2금융기관'} / {loan.loanType} / {loan.years}년 / {loan.rate}%
@@ -512,23 +531,6 @@ function ResultScreen({ assets, incomes, loan, onRestart, onEdit }) {
                 </div>
               )}
             </div>
-            {actualMonthlyPayment > 0 && (
-              <div style={{
-                marginBottom: '0.3rem'
-              }}>
-                <span style={{
-                  fontSize: '14px',
-                  color: '#62BBFF',
-                  fontWeight: 500,
-                  padding: '4px 12px',
-                  backgroundColor: 'rgba(98, 187, 255, 0.15)',
-                  borderRadius: '25px',
-                  display: 'inline-block',
-                }}>
-                  DSR {actualDsr.toFixed(1)}%
-                </span>
-              </div>
-            )}
 
             {/* LTV 제한으로 인해 DSR이 남는 경우 안내 메시지 표시 */}
             {calculations.isLtvLimited && (
