@@ -164,7 +164,7 @@ function IncomeScreen({ incomes, setIncomes, onNext, onBack, isEdit, onEditCompl
             fontWeight: 500,
             marginBottom: '0.5rem'
           }}>
-            소득 <span style={{color: '#ffffff', fontWeight: 700}}>{numberToKoreanDisplay(totalIncome)}</span> 기준
+            총 소득
           </div>
           <div style={{
             fontSize: 'clamp(2rem, 8vw, 2.2rem)', 
@@ -175,20 +175,6 @@ function IncomeScreen({ incomes, setIncomes, onNext, onBack, isEdit, onEditCompl
           }}>
             {numberToKoreanDisplay(totalIncome)}
           </div>
-          {loan && loan.dsrCalculated && loan.dsr > 0 && (
-            <div style={{ 
-              fontSize: '14px', 
-              color: '#62BBFF', 
-              fontWeight: 500,
-              padding: '4px 12px',
-              backgroundColor: 'rgba(98, 187, 255, 0.15)',
-              borderRadius: '8px',
-              display: 'inline-block',
-              marginTop: '4px',
-            }}>
-              DSR {loan.dsr}%
-            </div>
-          )}
         </div>
         <div className="form-group">
           {incomeTypes.map(({ id, label, placeholder }) => (

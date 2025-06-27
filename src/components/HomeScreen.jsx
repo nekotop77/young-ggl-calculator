@@ -21,6 +21,9 @@ function HomeScreen({ onStart }) {
             </div>
           </div>
         </div>
+      </div>
+      
+      <div className="fixed-bottom-container">
         <button className="bottom-button" onClick={onStart}>
           시작하기
         </button>

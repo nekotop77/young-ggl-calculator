@@ -96,9 +96,12 @@ body::after {
   align-items: center;
 }
 
-/* 홈 화면은 기존 스타일 유지 */
+/* 홈 화면도 하단 고정 버튼 사용 */
 .home-screen .screen-container {
-  padding: clamp(1.5rem, 5vw, 2.5rem) clamp(1rem, 4vw, 1.5rem) clamp(1.5rem, 5vw, 2rem);
+  padding: clamp(1.5rem, 5vw, 2.5rem) clamp(1rem, 4vw, 1.5rem) clamp(5rem, 12vw, 6rem);
+  padding-top: max(clamp(1.5rem, 5vw, 2.5rem), env(safe-area-inset-top));
+  padding-left: max(clamp(1rem, 4vw, 1.5rem), env(safe-area-inset-left));
+  padding-right: max(clamp(1rem, 4vw, 1.5rem), env(safe-area-inset-right));
 }
 
 .home-screen .screen-container > main {
@@ -221,12 +224,7 @@ body::after {
   transition: all 0.2s ease;
 }
 
-/* 홈 화면 버튼은 기존 스타일 유지 */
-.home-screen .bottom-button {
-  border-radius: clamp(25px, 6vw, 50px);
-  margin-top: auto;
-  margin-bottom: 40px;
-}
+/* 홈 화면 버튼도 일반 버튼과 동일 */
 
 /* A02 Assets Screen */
 .screen-header {
@@ -429,7 +427,9 @@ body::after {
   }
   /* 홈 화면 */
   .home-screen .screen-container {
-    padding: 1rem;
+    padding: clamp(1rem, 4vw, 1.25rem);
+    padding-top: max(clamp(1rem, 4vw, 1.25rem), env(safe-area-inset-top));
+    padding-bottom: clamp(4rem, 10vw, 5rem);
   }
   .selection-container {
     flex-direction: row;

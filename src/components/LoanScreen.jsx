@@ -19,6 +19,9 @@ const loanTypeOptions = [
 
 function LoanScreen({ loan, setLoan, incomes, assets, onBack, onNext, isEdit, onEditComplete }) {
   const loanAmountInputRef = useRef(null);
+  const yearsInputRef = useRef(null);
+  const rateInputRef = useRef(null);
+  const dsrButtonRef = useRef(null);
   const [dsrCalculated, setDsrCalculated] = useState(false);
   const [monthlyPayment, setMonthlyPayment] = useState(0);
   const [dsr, setDsr] = useState(0);
@@ -365,6 +368,15 @@ function LoanScreen({ loan, setLoan, incomes, assets, onBack, onNext, isEdit, on
     }
   }, [loan.loanType, loan.finance, loan.years, loan.rate, totalIncome, isEdit]);
 
+  const handleKeyPress = (e, nextRef) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (nextRef && nextRef.current) {
+        nextRef.current.focus();
+      }
+    }
+  };
+
   return (
     <div className="screen-container">
       <header className="screen-header">
@@ -404,7 +416,7 @@ function LoanScreen({ loan, setLoan, incomes, assets, onBack, onNext, isEdit, on
               fontWeight: 500,
               padding: '4px 12px',
               backgroundColor: 'rgba(98, 187, 255, 0.15)',
-              borderRadius: '8px',
+              borderRadius: '25px',
               display: 'inline-block',
               marginTop: '2px',
             }}>
@@ -451,6 +463,8 @@ function LoanScreen({ loan, setLoan, incomes, assets, onBack, onNext, isEdit, on
                   placeholder="대출기간 입력하세요"
                   value={loan.years === 0 ? '' : loan.years}
                   onChange={e => handleLoanChange('years', e.target.value)}
+                  ref={yearsInputRef}
+                  onKeyDown={(e) => handleKeyPress(e, rateInputRef)}
                 />
               </div>
             </div>
@@ -469,6 +483,8 @@ function LoanScreen({ loan, setLoan, incomes, assets, onBack, onNext, isEdit, on
                   value={loan.rate === 0 ? '' : loan.rate}
                   onFocus={e => { if (e.target.value === '0') e.target.value = ''; }}
                   onChange={e => handleLoanChange('rate', e.target.value)}
+                  ref={rateInputRef}
+                  onKeyDown={(e) => handleKeyPress(e, dsrButtonRef)}
                 />
               </div>
             </div>
@@ -487,6 +503,7 @@ function LoanScreen({ loan, setLoan, incomes, assets, onBack, onNext, isEdit, on
             }}
             disabled={!isDsrReady}
             onClick={handleDsrCalc}
+            ref={dsrButtonRef}
           >
             DSR 계산
           </button>

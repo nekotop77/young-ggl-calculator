@@ -489,7 +489,7 @@ function ResultScreen({ assets, incomes, loan, onRestart, onEdit }) {
             <div className="label">대출</div>
             
             <div style={{fontSize:'14px', color:'#fff', marginBottom:'0.3rem'}}>
-              {loan.finance === '40' ? '제1금융기관' : '제2금융기관'} / {loan.loanType} / {loan.years}년 / {loan.rate}%
+              소득 {numberToKoreanDisplay(totalIncome)} / {loan.finance === '40' ? '제1금융기관' : '제2금융기관'} / {loan.loanType} / {loan.years}년 / {loan.rate}%
             </div>
             
             <div style={{
@@ -522,7 +522,7 @@ function ResultScreen({ assets, incomes, loan, onRestart, onEdit }) {
                   fontWeight: 500,
                   padding: '4px 12px',
                   backgroundColor: 'rgba(98, 187, 255, 0.15)',
-                  borderRadius: '8px',
+                  borderRadius: '25px',
                   display: 'inline-block',
                 }}>
                   DSR {actualDsr.toFixed(1)}%
@@ -548,6 +548,23 @@ function ResultScreen({ assets, incomes, loan, onRestart, onEdit }) {
               </div>
             )}
 
+          </div>
+        </div>
+        
+        {/* DSR 안내문구 */}
+        <div style={{
+          marginTop: '1.5rem',
+          padding: '1rem',
+          backgroundColor: 'rgba(255, 255, 255, 0.05)',
+          borderRadius: '8px',
+          textAlign: 'center'
+        }}>
+          <div style={{
+            fontSize: '14px',
+            color: '#A1A2B0',
+            fontWeight: 500
+          }}>
+            25.06.28 이후 수도권 대출 최대 6억으로 제한되었습니다
           </div>
         </div>
       </main>
