@@ -2,9 +2,24 @@ function HomeScreen({ onStart, onSetting }) {
   return (
     <div className="home-screen">
       <div className="screen-container">
-        <div style={{position:'absolute',top:'16px',right:'16px',zIndex:2}}>
+        <div style={{position:'absolute',top:'16px',right:'16px',zIndex:2,display:'flex',gap:'8px'}}>
           <button onClick={onSetting} style={{background:'none',border:'none',padding:0,cursor:'pointer'}} aria-label="설정">
             <span className="material-icons" style={{fontSize:'24px',color:'#fff'}}>settings</span>
+          </button>
+          <button
+            onClick={() => {
+              if (window.ReactNativeWebView) {
+                window.ReactNativeWebView.postMessage('close');
+              } else if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
+                window.Capacitor.Plugins.App.exitApp();
+              } else {
+                window.close();
+              }
+            }}
+            style={{background:'none',border:'none',padding:0,cursor:'pointer'}}
+            aria-label="닫기"
+          >
+            <span className="material-icons" style={{fontSize:'24px',color:'#fff'}}>close</span>
           </button>
         </div>
         <div className="content-container">
