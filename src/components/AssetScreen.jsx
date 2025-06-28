@@ -154,7 +154,7 @@ function AssetScreen({ assets, setAssets, onNext, onBack, isEdit, onEditComplete
   return (
     <div className="screen-container">
       <header className="screen-header">
-        <button className="back-button" onClick={onBack}><BackIcon /></button>
+        <button className="back-button" onClick={onBack} style={{marginLeft: '-8px'}}><BackIcon /></button>
         <h1 className="screen-title">자산</h1>
         <button 
           className="reset-button" 
@@ -175,9 +175,20 @@ function AssetScreen({ assets, setAssets, onNext, onBack, isEdit, onEditComplete
       </header>
       
       <main>
-        <div className="total-display">
-          <div className="label">총 자산</div>
-          <div className="amount">{numberToKoreanDisplay(totalAssets) || '0원'}</div>
+        <div className="total-display" style={{textAlign:'left', marginBottom:'2rem', marginTop:'12px'}}>
+          <div className="label" style={{
+            fontSize: 'clamp(0.875rem, 3vw, 1rem)',
+            color: '#A1A2B0',
+            fontWeight: 500,
+            marginBottom: '0.5rem'
+          }}>총 자산</div>
+          <div className="amount" style={{
+            fontSize: 'clamp(2rem, 8vw, 2.2rem)',
+            color: '#ffffff',
+            fontWeight: 700,
+            letterSpacing: '-1px',
+            marginBottom: '0.5rem'
+          }}>{numberToKoreanDisplay(totalAssets) || '0원'}</div>
         </div>
 
         <div className="form-group">

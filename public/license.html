@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>오픈소스라이선스</title>
+  <link href="https://fonts.googleapis.com/css?family=Noto+Sans+KR:400,700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: #101124;
+      font-family: 'Noto Sans KR', sans-serif;
+      margin: 0;
+      padding: 0;
+      color: #fff;
+      font-size: 14px;
+    }
+    .container {
+      max-width: 480px;
+      margin: 0 auto;
+      background: #181a2a;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      padding: 0 0.5rem 32px 0.5rem;
+      margin-top: 32px;
+      font-size: 14px;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      height: 56px;
+      padding: 0 0.5rem;
+      border-radius: 12px 12px 0 0;
+      background: #181a2a;
+    }
+    .back-button {
+      margin-left: -8px;
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+    }
+    .back-icon {
+      width: 24px;
+      height: 24px;
+      display: block;
+    }
+    .title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-left: 8px;
+      color: #fff;
+    }
+    .desc, .license-title, .license-content, .divider {
+      color: #fff;
+      font-size: 14px;
+    }
+    .desc {
+      margin-bottom: 18px;
+      margin-top: 8px;
+    }
+    .divider {
+      border: none;
+      border-top: 1px solid #222;
+      margin: 24px 0 24px 0;
+    }
+    .license-title {
+      font-weight: 700;
+      margin-bottom: 6px;
+      margin-top: 18px;
+    }
+    .license-content {
+      margin-bottom: 10px;
+    }
+    a { color: #7ecfff; text-decoration: underline; }
+    @media (max-width: 600px) {
+      .container { padding: 0 0.2rem 24px 0.2rem; }
+      .header { height: 48px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <button class="back-button" onclick="window.location.href='/setting'" aria-label="뒤로가기">
+        <svg class="back-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M15 19L8 12L15 5" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <span class="title">오픈소스라이선스</span>
+    </div>
+    <div style="padding:24px 0.5rem 0 0.5rem;">
+      <div class="desc">
+        본 앱은 다음의 오픈소스 및 도구를 사용하여 제작되었습니다.
+      </div>
+      <hr class="divider"/>
+      <div class="license-title">1. Material Icons</div>
+      <div class="license-content">
+        - 저작권(Copyright): © 2014 Google Inc.<br>
+        - 라이선스: Apache License 2.0<br>
+        - 라이선스 전문: <a href="https://www.apache.org/licenses/LICENSE-2.0" target="_blank">https://www.apache.org/licenses/LICENSE-2.0</a><br>
+        - 아이콘 출처: <a href="https://fonts.google.com/icons" target="_blank">https://fonts.google.com/icons</a><br><br>
+        Material Icons는 Google의 머티리얼 디자인 가이드라인에 따라 제공되는 아이콘 세트이며, 본 앱의 UI 구성에 사용되었습니다.
+      </div>
+      <hr class="divider"/>
+      <div class="license-title">2. Cursor AI (커서AI)</div>
+      <div class="license-content">
+        - 본 앱의 코드는 AI 개발 도구인 Cursor AI를 활용하여 생성되었습니다.<br>
+        - Cursor AI는 오픈소스 생성 도우미로서, 코드 생성에는 GPT 기반 인공지능 기술이 활용되었습니다.<br>
+        - 최종 코드는 사용자에 의해 검토 및 수정되었으며, 특정 오픈소스 라이브러리를 포함하고 있지 않습니다.<br>
+        - 공식 사이트: <a href="https://www.cursor.so" target="_blank">https://www.cursor.so</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html> 

@@ -1,7 +1,12 @@
-function HomeScreen({ onStart }) {
+function HomeScreen({ onStart, onSetting }) {
   return (
     <div className="home-screen">
       <div className="screen-container">
+        <div style={{position:'absolute',top:'16px',right:'16px',zIndex:2}}>
+          <button onClick={onSetting} style={{background:'none',border:'none',padding:0,cursor:'pointer'}} aria-label="설정">
+            <span className="material-icons" style={{fontSize:'24px',color:'#fff'}}>settings</span>
+          </button>
+        </div>
         <div className="content-container">
           <h1 className="main-title">
             내집마련

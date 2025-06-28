@@ -192,14 +192,24 @@ function LoanScreen({ loan, setLoan, incomes, assets, onBack, onNext, isEdit, on
         return result;
       }
       case '원금균등': {
-        // 원금균등 월납입 계산 공식
-        // 평균 월납입 = P/n + P*r*(n+1)/(2*n)
-        const monthlyPrincipal = principal / totalMonths;
-        const averageInterest = principal * monthlyRate * (totalMonths + 1) / (2 * totalMonths);
-        const result = monthlyPrincipal + averageInterest;
-        
-
-        
+        // 원금균등상환: DSR 40% 한도에 맞춰 대출 한도 계산 (이진탐색, 평균 월납입 기준)
+        const maxAnnualPayment = totalIncome * dsrLimit;
+        let low = 0;
+        let high = totalIncome * 20;
+        let result = 0;
+        while (high - low > 10000) {
+          const mid = Math.floor((low + high) / 2);
+          const monthlyPrincipal = mid / months;
+          const averageInterest = mid * loan.rate * (months + 1) / (2 * months);
+          const averageMonthlyPayment = monthlyPrincipal + averageInterest;
+          const annualPayment = averageMonthlyPayment * 12;
+          if (annualPayment <= maxAnnualPayment) {
+            result = mid;
+            low = mid;
+          } else {
+            high = mid;
+          }
+        }
         return result;
       }
       case '만기일시': {
@@ -231,7 +241,7 @@ function LoanScreen({ loan, setLoan, incomes, assets, onBack, onNext, isEdit, on
       }
       case '원금균등': {
         // 원금균등 역산 공식
-        // 월 평균 납입 = P/n + P*r*(n+1)/(2*n) = P*(1/n + r*(n+1)/(2*n))
+        // 월 평균 납입 = P/n + P*r*(n+1)/(2*n))
         // P = 월 평균 납입 / (1/n + r*(n+1)/(2*n))
         const principalCoeff = 1 / n;
         const interestCoeff = rate * (n + 1) / (2 * n);
@@ -282,14 +292,24 @@ function LoanScreen({ loan, setLoan, incomes, assets, onBack, onNext, isEdit, on
     let dsrValue;
 
     if (loan.loanType === '원금균등') {
-      // 원금균등: DSR 40% 딱 맞는 값으로 계산
-      actualLoanAmount = Math.floor(maxLoanAmount / 10000) * 10000; // 만원 단위 반올림
-      actualMonthlyPayment = calculateMonthlyPayment(actualLoanAmount, loan.rate, loan.years, loan.loanType);
-      annualPayment = actualMonthlyPayment * 12; // 월 평균 납입액 × 12
+      // 평균 월납입(DSR 산정용)
+      actualLoanAmount = Math.floor(maxLoanAmount / 10000) * 10000;
+      const monthlyPrincipal = actualLoanAmount / months;
+      const monthlyRate = loan.rate / 100 / 12;
+      const averageInterest = actualLoanAmount * monthlyRate * (months + 1) / (2 * months);
+      const averageMonthlyPayment = monthlyPrincipal + averageInterest;
+      // 첫달 월납입(표시용)
+      const firstMonthInterest = actualLoanAmount * monthlyRate;
+      const firstMonthPayment = monthlyPrincipal + firstMonthInterest;
+      actualMonthlyPayment = averageMonthlyPayment;
+      annualPayment = averageMonthlyPayment * 12;
       dsrValue = income > 0 ? (annualPayment / income) * 100 : 0;
-      
-      // 최종 DSR 반올림
       dsrValue = Math.round(dsrValue * 100) / 100;
+      setMonthlyPayment(averageMonthlyPayment);
+      setDsr(dsrValue);
+      setDsrCalculated(true);
+      setLoan(prev => ({ ...prev, monthlyPayment: averageMonthlyPayment, firstMonthPayment, loanAmount: actualLoanAmount, dsr: dsrValue, dsrCalculated: true }));
+      return;
     } else if (loan.loanType === '만기일시') {
       // 만기일시상환: DSR 40% 딱 맞는 값으로 계산 (스트레스 적용)
       const stressFactor = 1.825;
@@ -343,11 +363,11 @@ function LoanScreen({ loan, setLoan, incomes, assets, onBack, onNext, isEdit, on
   return (
     <div className="screen-container">
       <header className="screen-header">
-        <button className="back-button" onClick={onBack}><BackIcon /></button>
+        <button className="back-button" onClick={onBack} style={{marginLeft: '-8px'}}><BackIcon /></button>
         <h1 className="screen-title">대출</h1>
       </header>
       <main>
-        <div className="total-display">
+        <div className="total-display" style={{marginTop:'12px', marginBottom:'32px'}}>
           <div className="label" style={{marginBottom: '0.5rem'}}>
             소득 <span style={{color: '#ffffff', fontWeight: 700}}>{numberToKoreanDisplay(totalIncome)}</span> 기준
           </div>
@@ -368,23 +388,25 @@ function LoanScreen({ loan, setLoan, incomes, assets, onBack, onNext, isEdit, on
                 fontWeight: 500,
                 whiteSpace: 'nowrap'
               }}>
-                월납입 {numberToKoreanDisplay(monthlyPayment || loan.monthlyPayment)}
+                {loan.loanType === '원금균등'
+                  ? `첫달 ${numberToKoreanDisplay(loan.firstMonthPayment || 0)}`
+                  : `월납입 ${numberToKoreanDisplay(monthlyPayment || loan.monthlyPayment)}`}
               </div>
             )}
           </div>
           {((dsrCalculated && dsr > 0) || (isEdit && loan.dsrCalculated && loan.dsr > 0)) && (
-            <div style={{ 
-              fontSize: '14px', 
-              color: '#62BBFF', 
+            <span style={{
+              background: 'rgb(51, 66, 96)',
+              color: 'rgb(126, 207, 255)',
               fontWeight: 500,
-              padding: '4px 12px',
-              backgroundColor: 'rgba(98, 187, 255, 0.15)',
-              borderRadius: '25px',
+              fontSize: '0.95rem',
+              borderRadius: '12px',
+              padding: '3px 10px',
+              marginLeft: '4px',
               display: 'inline-block',
-              marginTop: '2px',
             }}>
               DSR {dsr || loan.dsr}%
-            </div>
+            </span>
           )}
         </div>
         <div className="form-group">
@@ -444,7 +466,13 @@ function LoanScreen({ loan, setLoan, incomes, assets, onBack, onNext, isEdit, on
                   pattern="[0-9]*[.,]?[0-9]*"
                   placeholder="금리를 입력하세요"
                   value={loan.rate === 0 ? '' : loan.rate}
-                  onFocus={e => { if (e.target.value === '0') e.target.value = ''; }}
+                  onFocus={e => { 
+                    if (e.target.value === '0') e.target.value = '';
+                    // 금리 입력필드 포커스시 최하단으로 스크롤
+                    setTimeout(() => {
+                      window.scrollTo(0, document.body.scrollHeight);
+                    }, 100);
+                  }}
                   onChange={e => handleLoanChange('rate', e.target.value)}
                   ref={rateInputRef}
                   onKeyDown={(e) => handleKeyPress(e, dsrButtonRef)}

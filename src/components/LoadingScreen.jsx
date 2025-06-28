@@ -1,6 +1,15 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const LoadingScreen = () => {
+  const navigate = useNavigate();
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      navigate('/result');
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, [navigate]);
+
   return (
     <div className="screen-container" style={{
       display: 'flex',

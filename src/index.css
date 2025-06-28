@@ -14,6 +14,8 @@ body {
   /* 모바일 앱용 설정 */
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: none;
+  /* 네이티브 앱용 스테이터스바 투명처리 */
+  padding-top: env(safe-area-inset-top);
 }
 
 /* 사파리 확대 방지 */
@@ -363,11 +365,13 @@ body::after {
 
 .input-card input:focus {
   outline: none;
+  /* 입력필드 클릭시 보더 컬러 제거 */
+  border-color: transparent;
 }
 
-/* 포커스 스타일 개선 */
 .input-card:focus-within {
-  /* 인터랙션 효과 제거 */
+  /* 입력필드 클릭시 보더 컬러 제거 */
+  border-color: transparent;
 }
 
 .input-card input::placeholder {
