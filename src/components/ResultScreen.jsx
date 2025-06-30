@@ -163,13 +163,11 @@ function ResultScreen({ assets, incomes, loan, onRestart, onEdit }) {
           // P = PMT * [(1+r)^n - 1] / [r(1+r)^n]
           const maxAnnualPayment = income * dsrLimit;
           const maxMonthlyPayment = maxAnnualPayment / 12;
-          
-          if (monthlyRate === 0) {
-            return maxMonthlyPayment * totalMonths;
-          }
-          
-          const factor = Math.pow(1 + monthlyRate, totalMonths);
-          return maxMonthlyPayment * (factor - 1) / (monthlyRate * factor);
+          const r = annualRate / 100 / 12;
+          const n = years * 12;
+          if (r === 0 || n === 0) return maxMonthlyPayment * n;
+          const factor = Math.pow(1 + r, n);
+          return maxMonthlyPayment * (factor - 1) / (r * factor);
         }
         case '원금균등': {
           // 원금균등: 연간 평균 상환액 기준으로 역산
@@ -211,10 +209,13 @@ function ResultScreen({ assets, incomes, loan, onRestart, onEdit }) {
           return maxMonthlyPayment * (factor - 1) / (monthlyRate * factor);
         }
         case '만기일시': {
-          // 만기일시상환: 스트레스 금리 적용
+          // 만기일시상환: 스트레스 DSR 적용
+          // 대출한도 = (연소득 × DSR한도) / (연이율 × 스트레스가중치)
           const stressFactor = 1.825;
+          const r = annualRate / 100;
           const maxAnnualPayment = income * dsrLimit;
-          return maxAnnualPayment / (annualRate / 100) / stressFactor;
+          if (r === 0) return 0;
+          return maxAnnualPayment / (r * stressFactor);
         }
         default: {
           // 기본값: 원리금균등

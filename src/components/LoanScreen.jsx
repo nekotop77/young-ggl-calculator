@@ -234,10 +234,13 @@ function LoanScreen({ loan, setLoan, incomes, assets, onBack, onNext, isEdit, on
     if (rate === 0 || n === 0) return Math.floor(maxMonthlyPayment * n);
     switch (loan.loanType) {
       case '원리금균등': {
-        // P = 월상환액 × [(1+r)^n - 1] / [r × (1+r)^n]
-        const numerator = Math.pow(1 + rate, n) - 1;
-        const denominator = rate * Math.pow(1 + rate, n);
-        return Math.floor(maxMonthlyPayment * (numerator / denominator));
+        // 월이자율
+        const r = loan.rate / 100 / 12;
+        const n = loan.years * 12;
+        if (r === 0 || n === 0) return Math.floor(maxMonthlyPayment * n);
+        const factor = Math.pow(1 + r, n);
+        // 대출한도 역산 공식
+        return Math.floor(maxMonthlyPayment * (factor - 1) / (r * factor));
       }
       case '원금균등': {
         // 원금균등 역산 공식
@@ -254,11 +257,10 @@ function LoanScreen({ loan, setLoan, incomes, assets, onBack, onNext, isEdit, on
       }
       case '만기일시': {
         // 만기일시상환: 스트레스 DSR 적용
-        // 연간 상환액 = P × 연이율 × 스트레스 가중치
-        // P = 연간 상환액 / (연이율 × 스트레스 가중치)
+        // 대출한도 = (연소득 × DSR한도) / (연이율 × 스트레스가중치)
         const stressFactor = 1.825;
         const annualRate = loan.rate / 100;
-        const maxAnnualPayment = maxMonthlyPayment * 12;
+        if (annualRate === 0) return 0;
         return Math.floor(maxAnnualPayment / (annualRate * stressFactor));
       }
       default:
