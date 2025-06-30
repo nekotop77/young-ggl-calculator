@@ -13,8 +13,7 @@ const financeOptions = [
 
 const loanTypeOptions = [
   { value: '원금균등', label: '원금균등분할상환' },
-  { value: '원리금균등', label: '원리금균등분할상환' },
-  { value: '만기일시', label: '만기일시상환' },
+  { value: '원리금균등', label: '원리금균등분할상환' }
 ];
 
 function LoanScreen({ loan, setLoan, incomes, assets, onBack, onNext, isEdit, onEditComplete }) {
@@ -64,7 +63,18 @@ function LoanScreen({ loan, setLoan, incomes, assets, onBack, onNext, isEdit, on
       return;
     }
     if (id === 'finance') {
-      setLoan(prev => ({ ...prev, [id]: value }));
+      setLoan(prev => ({
+        ...prev,
+        [id]: value,
+        loanAmount: 0,
+        monthlyPayment: 0,
+        firstMonthPayment: 0,
+        dsr: 0,
+        dsrCalculated: false
+      }));
+      setDsrCalculated(false);
+      setMonthlyPayment(0);
+      setDsr(0);
       return;
     }
     const cleanValue = value.replace(/원/g, '').replace(/[^0-9.]/g, '');
