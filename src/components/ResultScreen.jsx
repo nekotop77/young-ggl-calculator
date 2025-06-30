@@ -503,11 +503,13 @@ function ResultScreen({ assets, incomes, loan, onRestart, onEdit }) {
               <div style={{fontSize:'1.1rem',fontWeight:700,color:'#fff',letterSpacing:'-1px'}}>
                 {numberToKoreanDisplay(Math.floor(calculations.actualLoan))}
               </div>
-              <div style={{fontSize:'1.1rem',color:'#A1A2B0',fontWeight:500,whiteSpace:'nowrap',marginLeft:'2px'}}>
-                {loan.loanType === '원금균등'
-                  ? `첫달 ${numberToKoreanDisplay(Math.floor(actualMonthlyPayment))}`
-                  : `월 납입 ${numberToKoreanDisplay(Math.floor(actualMonthlyPayment))}`}
-              </div>
+              {(calculations.actualLoan > 0 && actualMonthlyPayment > 0) && (
+                <div style={{fontSize:'1.1rem',color:'#A1A2B0',fontWeight:500,whiteSpace:'nowrap',marginLeft:'2px'}}>
+                  {loan.loanType === '원금균등'
+                    ? `첫달 ${numberToKoreanDisplay(Math.floor(actualMonthlyPayment))}`
+                    : `월 납입 ${numberToKoreanDisplay(Math.floor(actualMonthlyPayment))}`}
+                </div>
+              )}
             </div>
             {/* 4. 하단 안내문구(기존 스타일 유지) */}
             {calculations.isLtvLimited && (

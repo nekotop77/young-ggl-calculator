@@ -48,7 +48,19 @@ function LoanScreen({ loan, setLoan, incomes, assets, onBack, onNext, isEdit, on
   }, [isEdit]);
 
   const handleLoanChange = (id, value) => {
-    if (id === 'loanType' || id === 'finance') {
+    if (id === 'loanType') {
+      setLoan(prev => ({
+        ...prev,
+        loanType: value,
+        loanAmount: 0,
+        monthlyPayment: 0,
+        firstMonthPayment: 0,
+        dsr: 0,
+        dsrCalculated: false
+      }));
+      return;
+    }
+    if (id === 'finance') {
       setLoan(prev => ({ ...prev, [id]: value }));
       return;
     }
@@ -127,7 +139,7 @@ function LoanScreen({ loan, setLoan, incomes, assets, onBack, onNext, isEdit, on
 
   // 한글 단위 표시 (만원 단위) - 소득 입력 화면과 동일
   const numberToKoreanDisplay = (num) => {
-    if (typeof num !== 'number' || isNaN(num) || num === 0) return null;
+    if (typeof num !== 'number' || isNaN(num) || num === 0) return '0원';
     const manWon = Math.floor(num / 10000);
     
     // 조 단위 (1조 = 1,000,000만원)
@@ -213,9 +225,15 @@ function LoanScreen({ loan, setLoan, incomes, assets, onBack, onNext, isEdit, on
         return result;
       }
       case '만기일시': {
-        // 만기일시 월납입 계산 공식
-        // 월 납입 = 월 이자만
-        return principal * monthlyRate;
+        // 만기일시상환: 실제 금융권 계산기와 최대한 동일하게
+        // DSR 한도 39.99% 적용
+        const stressFactor = 1.825;
+        const annualRate = loan.rate / 100;
+        const dsrLimitReal = 0.3999; // 39.99%
+        const maxAnnualPayment = totalIncome * dsrLimitReal;
+        if (annualRate === 0) return 0;
+        // 만원 단위 내림
+        return Math.floor(maxAnnualPayment / (annualRate * stressFactor) / 10000) * 10000;
       }
       default:
         return 0;
@@ -313,15 +331,21 @@ function LoanScreen({ loan, setLoan, incomes, assets, onBack, onNext, isEdit, on
       setLoan(prev => ({ ...prev, monthlyPayment: averageMonthlyPayment, firstMonthPayment, loanAmount: actualLoanAmount, dsr: dsrValue, dsrCalculated: true }));
       return;
     } else if (loan.loanType === '만기일시') {
-      // 만기일시상환: DSR 40% 딱 맞는 값으로 계산 (스트레스 적용)
+      // 만기일시상환: 실제 금융권 계산기와 최대한 동일하게
       const stressFactor = 1.825;
-      actualLoanAmount = Math.floor(maxLoanAmount / 10000) * 10000; // 만원 단위 반올림
-      actualMonthlyPayment = calculateMonthlyPayment(actualLoanAmount, loan.rate, loan.years, loan.loanType);
+      const annualRate = loan.rate / 100;
+      const dsrLimitReal = 0.3999; // 39.99%
+      const maxAnnualPayment = income * dsrLimitReal;
+      // 만원 단위 내림
+      actualLoanAmount = Math.floor(maxAnnualPayment / (annualRate * stressFactor) / 10000) * 10000;
+      actualMonthlyPayment = Math.floor(actualLoanAmount * (loan.rate / 100 / 12));
       annualPayment = actualLoanAmount * (loan.rate / 100) * stressFactor;
-      dsrValue = income > 0 ? (annualPayment / income) * 100 : 0;
-      
-      // 최종 DSR 반올림
-      dsrValue = Math.round(dsrValue * 100) / 100;
+      dsrValue = income > 0 ? Math.floor((annualPayment / income) * 10000) / 100 : 0;
+      setMonthlyPayment(actualMonthlyPayment);
+      setDsr(dsrValue);
+      setDsrCalculated(true);
+      setLoan(prev => ({ ...prev, monthlyPayment: actualMonthlyPayment, loanAmount: actualLoanAmount, dsr: dsrValue, dsrCalculated: true }));
+      return;
     } else {
       // 원리금균등: DSR 40% 딱 맞는 값으로 계산
       actualLoanAmount = Math.floor(maxLoanAmount / 10000) * 10000; // 만원 단위 반올림
@@ -380,10 +404,9 @@ function LoanScreen({ loan, setLoan, incomes, assets, onBack, onNext, isEdit, on
             marginBottom: '0.3rem'
           }}>
             <div style={{fontSize:'2.1rem', letterSpacing:'-1px', fontWeight: 700}}>
-              {(dsrCalculated || (isEdit && loan.dsrCalculated && loan.loanAmount)) ? 
-                numberToKoreanDisplay(loan.loanAmount) : '0원'}
+              {(dsrCalculated && loan.loanAmount > 0) ? numberToKoreanDisplay(loan.loanAmount) : numberToKoreanDisplay(0)}
             </div>
-            {((dsrCalculated && monthlyPayment > 0) || (isEdit && loan.dsrCalculated && loan.monthlyPayment > 0)) && (
+            {(dsrCalculated && ((loan.loanType === '원금균등' && loan.firstMonthPayment > 0) || (loan.loanType !== '원금균등' && (monthlyPayment > 0 || loan.monthlyPayment > 0)))) && (
               <div style={{ 
                 fontSize: 'clamp(12px, 4vw, 16pt)', 
                 color: '#A1A2B0', 
@@ -391,7 +414,7 @@ function LoanScreen({ loan, setLoan, incomes, assets, onBack, onNext, isEdit, on
                 whiteSpace: 'nowrap'
               }}>
                 {loan.loanType === '원금균등'
-                  ? `첫달 ${numberToKoreanDisplay(loan.firstMonthPayment || 0)}`
+                  ? `첫달 ${numberToKoreanDisplay(loan.firstMonthPayment)}`
                   : `월납입 ${numberToKoreanDisplay(monthlyPayment || loan.monthlyPayment)}`}
               </div>
             )}

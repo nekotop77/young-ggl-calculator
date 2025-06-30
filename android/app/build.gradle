@@ -20,18 +20,21 @@ android {
         sourceCompatibility JavaVersion.VERSION_21
         targetCompatibility JavaVersion.VERSION_21
     }
+    
     signingConfigs {
         release {
-            storeFile file('upload-keystore.jks')
-            storePassword '123456'
-            keyAlias 'key0'
-            keyPassword '123456'
+            storeFile file('../upload-keystore.jks')
+            storePassword '864029'
+            keyAlias 'upload'
+            keyPassword '864029'
         }
     }
     buildTypes {
         release {
+            signingConfig signingConfigs.release
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            shrinkResources false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
 }

@@ -1,7 +1,79 @@
+import React, { useState } from 'react';
 import HomeScreen from './components/HomeScreen';
+import AssetScreen from './components/AssetScreen';
+import IncomeScreen from './components/IncomeScreen';
+import LoanScreen from './components/LoanScreen';
+import LoadingScreen from './components/LoadingScreen';
+import ResultScreen from './components/ResultScreen';
+import SettingScreen from './components/SettingScreen';
+import SettingDetailScreen from './components/SettingDetailScreen';
 
 function App() {
-  return <HomeScreen />;
+  const [step, setStep] = useState('home');
+  const [assets, setAssets] = useState({ cash: 0, stocks: 0, severance: 0, insurance: 0 });
+  const [incomes, setIncomes] = useState({ salary: 0, bonus: 0, side: 0, other: 0 });
+  const [loan, setLoan] = useState({ loanType: '원금균등', finance: '40', years: 0, rate: 0, loanAmount: 0, dsr: 0, dsrCalculated: false });
+
+  // 화면 이동 핸들러
+  const goToAsset = () => setStep('asset'); // A02
+  const goToIncome = () => setStep('income'); // A03
+  const goToLoan = () => setStep('loan'); // A04
+  const goToLoading = () => setStep('A04-1'); // A04-1(로딩)
+  const goToResult = () => setStep('result'); // A05
+  const goToSetting = () => setStep('setting'); // A06
+  const goToSettingPrivacy = () => setStep('setting-privacy'); // A06-1
+  const goToSettingLicense = () => setStep('setting-license'); // A06-2
+  const restart = () => {
+    setAssets({ cash: 0, stocks: 0, severance: 0, insurance: 0 });
+    setIncomes({ salary: 0, bonus: 0, side: 0, other: 0 });
+    setLoan({ loanType: '원금균등', finance: '40', years: 0, rate: 0, loanAmount: 0, dsr: 0, dsrCalculated: false });
+    setStep('home');
+  };
+  const goToAssetBackToHome = () => setStep('home');
+
+  // A04-1(로딩)에서 결과화면으로 자동 이동
+  React.useEffect(() => {
+    if (step === 'A04-1') {
+      const timer = setTimeout(() => {
+        setStep('result');
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [step]);
+
+  // 결과화면에서 뒤로가기 시 A04(대출, isEdit)로 이동
+  React.useEffect(() => {
+    if (step === 'result') {
+      window.history.pushState({ page: 'result' }, '', '');
+      const handlePopState = (e) => {
+        setStep('loanFromResult');
+      };
+      window.addEventListener('popstate', handlePopState);
+      return () => {
+        window.removeEventListener('popstate', handlePopState);
+      };
+    }
+  }, [step]);
+
+  return (
+    <>
+      {step === 'home' && <HomeScreen onStart={goToAsset} onSetting={goToSetting} />}
+      {step === 'setting' && <SettingScreen onBack={restart} onShowPrivacy={goToSettingPrivacy} onShowLicense={goToSettingLicense} />}
+      {step === 'setting-privacy' && <SettingDetailScreen title="개인정보 처리방침" src="/privacy.html" onBack={goToSetting} />}
+      {step === 'setting-license' && <SettingDetailScreen title="오픈소스라이선스" src="/license.html" onBack={goToSetting} />}
+      {step === 'asset' && <AssetScreen assets={assets} setAssets={setAssets} onNext={goToIncome} onBack={goToAssetBackToHome} />}
+      {step === 'income' && <IncomeScreen incomes={incomes} setIncomes={setIncomes} onNext={goToLoan} onBack={goToAsset} loan={loan} />}
+      {(step === 'loan' || step === 'loanFromResult') && (
+        <LoanScreen loan={loan} setLoan={setLoan} incomes={incomes} assets={assets} onBack={goToIncome} onNext={goToLoading} isEdit={step === 'loanFromResult'} />
+      )}
+      {step === 'A04-1' && <LoadingScreen />}
+      {step === 'result' && <ResultScreen assets={assets} incomes={incomes} loan={loan} onRestart={restart} onEdit={(target) => {
+        if (target === 'asset') setStep('asset');
+        else if (target === 'income') setStep('income');
+        else if (target === 'loan') setStep('loanFromResult');
+      }} />}
+    </>
+  );
 }
 
 export default App;

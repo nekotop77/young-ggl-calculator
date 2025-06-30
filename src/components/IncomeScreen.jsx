@@ -23,9 +23,7 @@ function IncomeScreen({ incomes, setIncomes, onNext, onBack, isEdit, onEditCompl
     setIncomes(prev => ({ ...prev, [id]: numericValue }));
   };
 
-  const totalIncome = useMemo(() => {
-    return Object.values(incomes).reduce((sum, val) => sum + val, 0);
-  }, [incomes]);
+  const totalIncome = Object.values(incomes).reduce((sum, val) => sum + Number(val), 0);
 
   const isNextDisabled = totalIncome === 0;
   const hasInput = Object.values(incomes).some(value => value > 0);

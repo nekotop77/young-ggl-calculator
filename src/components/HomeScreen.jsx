@@ -6,21 +6,6 @@ function HomeScreen({ onStart, onSetting }) {
           <button onClick={onSetting} style={{background:'none',border:'none',padding:0,cursor:'pointer'}} aria-label="설정">
             <span className="material-icons" style={{fontSize:'24px',color:'#fff'}}>settings</span>
           </button>
-          <button
-            onClick={() => {
-              if (window.ReactNativeWebView) {
-                window.ReactNativeWebView.postMessage('close');
-              } else if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
-                window.Capacitor.Plugins.App.exitApp();
-              } else {
-                window.close();
-              }
-            }}
-            style={{background:'none',border:'none',padding:0,cursor:'pointer'}}
-            aria-label="닫기"
-          >
-            <span className="material-icons" style={{fontSize:'24px',color:'#fff'}}>close</span>
-          </button>
         </div>
         <div className="content-container">
           <h1 className="main-title">

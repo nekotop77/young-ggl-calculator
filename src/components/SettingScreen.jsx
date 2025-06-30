@@ -6,7 +6,7 @@ const BackIcon = () => (
   </svg>
 );
 
-function SettingScreen({ onBack }) {
+function SettingScreen({ onBack, onShowPrivacy, onShowLicense }) {
   return (
     <div className="screen-container" style={{minHeight:'100vh',background:'#101124',color:'#fff',paddingTop:0}}>
       <header className="screen-header" style={{display:'flex',alignItems:'center',height:'56px',padding:'0 0.5rem'}}>
@@ -18,16 +18,16 @@ function SettingScreen({ onBack }) {
       <main style={{padding:'0 0.5rem'}}>
         <ul style={{listStyle:'none',padding:0,margin:0}}>
           <li style={{borderBottom:'1px solid #222',padding:'1rem 0',display:'flex',alignItems:'center',justifyContent:'space-between',cursor:'pointer'}}>
-            <a href="/privacy.html" style={{display:'flex',alignItems:'center',justifyContent:'space-between',width:'100%',color:'inherit',textDecoration:'none'}}>
+            <button onClick={onShowPrivacy} style={{display:'flex',alignItems:'center',justifyContent:'space-between',width:'100%',color:'inherit',textDecoration:'none',background:'none',border:'none',padding:0,cursor:'pointer'}}>
               개인정보 처리방침
               <span className="material-icons" style={{fontSize:'18px',color:'#888'}}>arrow_forward_ios</span>
-            </a>
+            </button>
           </li>
           <li style={{borderBottom:'1px solid #222',padding:'1rem 0',display:'flex',alignItems:'center',justifyContent:'space-between',cursor:'pointer'}}>
-            <a href="/license.html" style={{display:'flex',alignItems:'center',justifyContent:'space-between',width:'100%',color:'inherit',textDecoration:'none'}}>
+            <button onClick={onShowLicense} style={{display:'flex',alignItems:'center',justifyContent:'space-between',width:'100%',color:'inherit',textDecoration:'none',background:'none',border:'none',padding:0,cursor:'pointer'}}>
               오픈소스라이선스
               <span className="material-icons" style={{fontSize:'18px',color:'#888'}}>arrow_forward_ios</span>
-            </a>
+            </button>
           </li>
         </ul>
         <div style={{color:'#888',fontSize:'0.95rem'}}>

@@ -1,15 +1,6 @@
-import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React from 'react';
 
 const LoadingScreen = () => {
-  const navigate = useNavigate();
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      navigate('/result');
-    }, 2000);
-    return () => clearTimeout(timer);
-  }, [navigate]);
-
   return (
     <div className="screen-container" style={{
       display: 'flex',
@@ -70,8 +61,6 @@ const LoadingScreen = () => {
         살 수있는 집 담보 비율에 맞게<br />
         대출을 다시 계산하고 있어요
       </div>
-
-
     </div>
   );
 };
