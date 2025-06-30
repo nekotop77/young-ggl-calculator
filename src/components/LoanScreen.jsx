@@ -58,6 +58,9 @@ function LoanScreen({ loan, setLoan, incomes, assets, onBack, onNext, isEdit, on
         dsr: 0,
         dsrCalculated: false
       }));
+      setDsrCalculated(false);
+      setMonthlyPayment(0);
+      setDsr(0);
       return;
     }
     if (id === 'finance') {

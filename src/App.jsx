@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import HomeScreen from './components/HomeScreen';
 import AssetScreen from './components/AssetScreen';
 import IncomeScreen from './components/IncomeScreen';
@@ -64,7 +64,7 @@ function App() {
       {step === 'asset' && <AssetScreen assets={assets} setAssets={setAssets} onNext={goToIncome} onBack={goToAssetBackToHome} />}
       {step === 'income' && <IncomeScreen incomes={incomes} setIncomes={setIncomes} onNext={goToLoan} onBack={goToAsset} loan={loan} />}
       {(step === 'loan' || step === 'loanFromResult') && (
-        <LoanScreen loan={loan} setLoan={setLoan} incomes={incomes} assets={assets} onBack={goToIncome} onNext={goToLoading} isEdit={step === 'loanFromResult'} />
+        <LoanScreen loan={loan} setLoan={setLoan} incomes={incomes} assets={assets} onBack={goToIncome} onNext={goToLoading} isEdit={step === 'loanFromResult'} onEditComplete={goToResult} />
       )}
       {step === 'A04-1' && <LoadingScreen />}
       {step === 'result' && <ResultScreen assets={assets} incomes={incomes} loan={loan} onRestart={restart} onEdit={(target) => {
