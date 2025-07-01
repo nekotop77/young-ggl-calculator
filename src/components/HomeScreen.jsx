@@ -13,7 +13,7 @@ function HomeScreen({ onStart, onSetting }) {
             <br />
             얼마까지 가능할까?
             <br />
-            <strong>영끌 계산기</strong>
+            <strong>영끌 내집</strong>
           </h1>
           <div className="selection-container">
             <div className="selection-card">
