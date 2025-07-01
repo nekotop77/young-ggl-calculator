@@ -506,8 +506,8 @@ function ResultScreen({ assets, incomes, loan, onRestart, onEdit }) {
               {(calculations.actualLoan > 0 && actualMonthlyPayment > 0) && (
                 <div style={{fontSize:'1.1rem',color:'#A1A2B0',fontWeight:500,whiteSpace:'nowrap',marginLeft:'2px'}}>
                   {loan.loanType === '원금균등'
-                    ? `첫달 ${numberToKoreanDisplay(Math.floor(actualMonthlyPayment))}`
-                    : `월 납입 ${numberToKoreanDisplay(Math.floor(actualMonthlyPayment))}`}
+                    ? `첫달 ${numberToKoreanDisplay(Math.trunc(actualMonthlyPayment / 10000) * 10000)}`
+                    : `월 납입 ${numberToKoreanDisplay(Math.trunc(actualMonthlyPayment / 10000) * 10000)}`}
                 </div>
               )}
             </div>

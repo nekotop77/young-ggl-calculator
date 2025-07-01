@@ -12,8 +12,8 @@ const financeOptions = [
 ];
 
 const loanTypeOptions = [
-  { value: '원금균등', label: '원금균등분할상환' },
-  { value: '원리금균등', label: '원리금균등분할상환' }
+  { value: '원리금균등', label: '원리금균등분할상환' },
+  { value: '원금균등', label: '원금균등분할상환' }
 ];
 
 function LoanScreen({ loan, setLoan, incomes, assets, onBack, onNext, isEdit, onEditComplete }) {
