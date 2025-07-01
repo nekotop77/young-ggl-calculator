@@ -427,8 +427,8 @@ function LoanScreen({ loan, setLoan, incomes, assets, onBack, onNext, isEdit, on
                 whiteSpace: 'nowrap'
               }}>
                 {loan.loanType === '원금균등'
-                  ? `첫달 ${numberToKoreanDisplay(loan.firstMonthPayment)}`
-                  : `월납입 ${numberToKoreanDisplay(monthlyPayment || loan.monthlyPayment)}`}
+                  ? `첫달 ${numberToKoreanDisplay(Math.trunc(loan.firstMonthPayment / 10000) * 10000)}`
+                  : `월납입 ${numberToKoreanDisplay(Math.trunc((monthlyPayment || loan.monthlyPayment) / 10000) * 10000)}`}
               </div>
             )}
           </div>
