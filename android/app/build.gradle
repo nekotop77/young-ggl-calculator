@@ -7,8 +7,8 @@ android {
         applicationId "com.nekotop.younggglcalculator"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 2
-        versionName "1.1"
+        versionCode 3
+        versionName "1.2"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -24,9 +24,9 @@ android {
     signingConfigs {
         release {
             storeFile file('../upload-keystore.jks')
-            storePassword '864029'
+            storePassword '231217'
             keyAlias 'upload'
-            keyPassword '864029'
+            keyPassword '231217'
         }
     }
     buildTypes {
