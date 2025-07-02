@@ -501,13 +501,13 @@ function ResultScreen({ assets, incomes, loan, onRestart, onEdit }) {
             {/* 3. 대출금액+월납입 */}
             <div style={{display:'flex',alignItems:'baseline',gap:'10px',marginBottom:'0.3rem'}}>
               <div style={{fontSize:'1.1rem',fontWeight:700,color:'#fff',letterSpacing:'-1px'}}>
-                {numberToKoreanDisplay(Math.floor(loan.loanAmount || 0))}
+                {numberToKoreanDisplay(Math.floor(calculations.actualLoan))}
               </div>
-              {(loan.loanAmount > 0 && (loan.loanType === '원금균등' ? loan.firstMonthPayment : loan.monthlyPayment) > 0) && (
+              {(calculations.actualLoan > 0 && actualMonthlyPayment > 0) && (
                 <div style={{fontSize:'1.1rem',color:'#A1A2B0',fontWeight:500,whiteSpace:'nowrap',marginLeft:'2px'}}>
                   {loan.loanType === '원금균등'
-                    ? `첫달 ${numberToKoreanDisplay(Math.trunc((loan.firstMonthPayment || 0) / 10000) * 10000)}`
-                    : `월 납입 ${numberToKoreanDisplay(Math.trunc((loan.monthlyPayment || 0) / 10000) * 10000)}`}
+                    ? `첫달 ${numberToKoreanDisplay(Math.trunc(actualMonthlyPayment / 10000) * 10000)}`
+                    : `월 납입 ${numberToKoreanDisplay(Math.trunc(actualMonthlyPayment / 10000) * 10000)}`}
                 </div>
               )}
             </div>
