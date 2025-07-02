@@ -389,7 +389,7 @@ function ResultScreen({ assets, incomes, loan, onRestart, onEdit }) {
     <div className="screen-container">
       <header className="screen-header">
         <button className="back-button" onClick={() => onEdit('loan')} style={{marginLeft: '-8px'}}><BackIcon /></button>
-        <h1 className="screen-title">영끌 계산 완료</h1>
+        <h1 className="screen-title">영끌 내집 계산 완료</h1>
       </header>
       <main>
         {/* 드롭다운 */}

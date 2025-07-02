@@ -546,7 +546,7 @@ function LoanScreen({ loan, setLoan, incomes, assets, onBack, onNext, isEdit, on
           disabled={!dsrCalculated}
           onClick={isEdit ? onEditComplete : onNext}
         >
-          영끌 확인하기 →
+          영끌 내집 확인하기 →
         </button>
       </div>
     </div>

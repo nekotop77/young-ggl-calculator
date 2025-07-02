@@ -13,7 +13,7 @@ If you are developing a production application, we recommend using TypeScript wi
 
 # Young GGL Calculator
 
-영끌 계산기 - 내집마련 얼마까지 가능할까?
+영끌 내집 - 내집마련 얼마까지 가능할까?
 
 ## 최근 업데이트
 - 2024년 12월: 핸드폰 모형 제거 및 전체 화면 레이아웃 적용
@@ -27,4 +27,4 @@ npm run dev
 ```bash
 npm run deploy
 ```
-# 영끌 계산기 - 재배포 트리거 Tue Jun 24 09:55:44 KST 2025
+# 영끌 내집 - 재배포 트리거 Tue Jun 24 09:55:44 KST 2025

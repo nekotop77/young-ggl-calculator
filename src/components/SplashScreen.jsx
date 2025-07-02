@@ -66,7 +66,7 @@ function SplashScreen() {
           fontWeight: 700,
           letterSpacing: '-1px'
         }}>
-          영끌 계산기
+          영끌 내집
         </div>
       </div>
     </div>

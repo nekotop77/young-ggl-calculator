@@ -1,6 +1,6 @@
 {
   "appId": "com.nekotop.younggglcalculator",
-  "appName": "영끌계산기",
+  "appName": "영끌 내집",
   "webDir": "dist",
   "server": {
     "url": "https://young-ggl-calculator.vercel.app/",
