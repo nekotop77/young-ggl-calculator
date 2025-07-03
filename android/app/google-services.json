@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "100632318911",
+    "project_id": "young-ggl-calculator",
+    "storage_bucket": "young-ggl-calculator.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:100632318911:android:663d8d4ed7541eef0ec70a",
+        "android_client_info": {
+          "package_name": "com.nekotop.younggglcalculato"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAoIfhuX70J3qNMs9dAe5mEbM6BccrJCe4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
