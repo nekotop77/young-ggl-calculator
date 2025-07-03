@@ -236,6 +236,8 @@ body::after {
   height: clamp(40px, 10vw, 44px);
   width: 100%;
   /* 패딩 제거 - 상위 컨테이너에서 처리 */
+  padding-top: env(safe-area-inset-top, 24px);
+  box-sizing: border-box;
 }
 
 .back-button {

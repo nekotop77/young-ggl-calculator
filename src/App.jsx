@@ -7,6 +7,8 @@ import LoadingScreen from './components/LoadingScreen';
 import ResultScreen from './components/ResultScreen';
 import SettingScreen from './components/SettingScreen';
 import SettingDetailScreen from './components/SettingDetailScreen';
+import { analytics } from "./firebase";
+import { logEvent } from "firebase/analytics";
 
 function App() {
   const [step, setStep] = useState('home');
@@ -52,6 +54,23 @@ function App() {
       return () => {
         window.removeEventListener('popstate', handlePopState);
       };
+    }
+  }, [step]);
+
+  useEffect(() => {
+    // step 값에 따라 screen_view 이벤트 기록
+    let screenName = "";
+    if (step === "home") screenName = "HomePage";
+    else if (step === "asset") screenName = "AssetPage";
+    else if (step === "income") screenName = "IncomePage";
+    else if (step === "loan" || step === "loanFromResult") screenName = "LoanPage";
+    else if (step === "A04-1") screenName = "LoadingPage";
+    else if (step === "result") screenName = "ResultPage";
+    else if (step === "setting") screenName = "SettingPage";
+    else if (step === "setting-privacy") screenName = "SettingPrivacyPage";
+    else if (step === "setting-license") screenName = "SettingLicensePage";
+    if (screenName) {
+      logEvent(analytics, "screen_view", { firebase_screen: screenName });
     }
   }, [step]);
 

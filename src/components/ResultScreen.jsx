@@ -1,4 +1,6 @@
 import React, { useState, useMemo } from 'react';
+import { analytics } from "../firebase";
+import { logEvent } from "firebase/analytics";
 
 const BackIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -385,10 +387,20 @@ function ResultScreen({ assets, incomes, loan, onRestart, onEdit }) {
   // 금융기관별 DSR 한도 (뱃지 표기용)
   const dsrLimit = loan.finance === '50' ? 50 : 40;
 
+  const handleRestart = () => {
+    logEvent(analytics, "retry_result");
+    if (onRestart) onRestart();
+  };
+
+  const handleBack = () => {
+    logEvent(analytics, "back_from_result");
+    if (onEdit) onEdit('loan');
+  };
+
   return (
     <div className="screen-container">
       <header className="screen-header">
-        <button className="back-button" onClick={() => onEdit('loan')} style={{marginLeft: '-8px'}}><BackIcon /></button>
+        <button className="back-button" onClick={handleBack} style={{marginLeft: '-8px'}}><BackIcon /></button>
         <h1 className="screen-title">영끌 내집 계산 완료</h1>
       </header>
       <main>
@@ -553,7 +565,7 @@ function ResultScreen({ assets, incomes, loan, onRestart, onEdit }) {
       <div className="fixed-bottom-container">
         <button
           className="bottom-button"
-          onClick={onRestart}
+          onClick={handleRestart}
         >
           처음부터 다시하기
         </button>
