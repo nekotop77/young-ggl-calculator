@@ -164,7 +164,7 @@ function IncomeScreen({ incomes, setIncomes, onNext, onBack, isEdit, onEditCompl
           초기화
         </button>
       </header>
-      <main>
+      <main style={{ paddingBottom: '56px' }}>
         <div className="total-display" style={{textAlign:'left', marginBottom:'2rem', marginTop:'12px'}}>
           <div className="label" style={{
             fontSize: 'clamp(0.875rem, 3vw, 1rem)',
@@ -181,7 +181,7 @@ function IncomeScreen({ incomes, setIncomes, onNext, onBack, isEdit, onEditCompl
           }}>{numberToKoreanDisplay(totalIncome)}</div>
         </div>
         <div className="form-group">
-          {incomeTypes.map(({ id, label, placeholder }) => (
+          {incomeTypes.map(({ id, label, placeholder }, idx) => (
             <div key={id} className="input-card">
               <div className="label">{label}</div>
               <div className="input-wrapper income-input">
@@ -194,6 +194,14 @@ function IncomeScreen({ incomes, setIncomes, onNext, onBack, isEdit, onEditCompl
                     onChange={(e) => handleIncomeChange(id, e.target.value)}
                     ref={id === 'salary' ? salaryInputRef : null}
                     onKeyDown={(e) => handleKeyPress(e, id === 'other')}
+                    {...(idx > 0 ? {
+                      onFocus: e => {
+                        setTimeout(() => {
+                          const rect = e.target.getBoundingClientRect();
+                          window.scrollBy({ top: rect.top - 16, behavior: 'smooth' });
+                        }, 150);
+                      }
+                    } : {})}
                   />
                 </div>
               </div>
@@ -208,7 +216,7 @@ function IncomeScreen({ incomes, setIncomes, onNext, onBack, isEdit, onEditCompl
           ref={ctaButtonRef}
           className="bottom-button"
           disabled={isNextDisabled}
-          onClick={isEdit ? onEditComplete : onNext}
+          onClick={e => { window.scrollTo(0,0); (isEdit ? onEditComplete : onNext)(e); }}
         >
           {isEdit ? '수정완료' : '다음 →'}
         </button>

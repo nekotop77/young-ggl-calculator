@@ -405,7 +405,7 @@ function LoanScreen({ loan, setLoan, incomes, assets, onBack, onNext, isEdit, on
         <button className="back-button" onClick={onBack} style={{marginLeft: '-8px'}}><BackIcon /></button>
         <h1 className="screen-title">대출</h1>
       </header>
-      <main>
+      <main style={{ paddingBottom: '56px' }}>
         <div className="total-display" style={{marginTop:'12px', marginBottom:'32px'}}>
           <div className="label" style={{marginBottom: '0.5rem'}}>
             소득 <span style={{color: '#ffffff', fontWeight: 700}}>{numberToKoreanDisplay(totalIncome)}</span> 기준
@@ -466,7 +466,7 @@ function LoanScreen({ loan, setLoan, incomes, assets, onBack, onNext, isEdit, on
             <div className="label">주담대 종류</div>
             <div className="input-wrapper">
               <select
-                value={loan.loanType}
+                value={loan.loanType || '원리금균등'}
                 onChange={e => handleLoanChange('loanType', e.target.value)}
                 style={{ width: '100%', padding: '0.9em', borderRadius: '8px', fontSize: '1em', background: '#23243a', color: '#fff', border: 'none', appearance: 'none' }}
               >
@@ -488,6 +488,12 @@ function LoanScreen({ loan, setLoan, incomes, assets, onBack, onNext, isEdit, on
                   onChange={e => handleLoanChange('years', e.target.value)}
                   ref={yearsInputRef}
                   onKeyDown={(e) => handleKeyPress(e, rateInputRef)}
+                  onFocus={e => {
+                    setTimeout(() => {
+                      const rect = e.target.getBoundingClientRect();
+                      window.scrollBy({ top: rect.top - 16, behavior: 'smooth' });
+                    }, 150);
+                  }}
                 />
               </div>
             </div>
@@ -504,12 +510,12 @@ function LoanScreen({ loan, setLoan, incomes, assets, onBack, onNext, isEdit, on
                   pattern="[0-9]*[.,]?[0-9]*"
                   placeholder="금리를 입력하세요"
                   value={loan.rate === 0 ? '' : loan.rate}
-                  onFocus={e => { 
+                  onFocus={e => {
                     if (e.target.value === '0') e.target.value = '';
-                    // 금리 입력필드 포커스시 최하단으로 스크롤
                     setTimeout(() => {
-                      window.scrollTo(0, document.body.scrollHeight);
-                    }, 100);
+                      const rect = e.target.getBoundingClientRect();
+                      window.scrollBy({ top: rect.top - 16, behavior: 'smooth' });
+                    }, 150);
                   }}
                   onChange={e => handleLoanChange('rate', e.target.value)}
                   ref={rateInputRef}
@@ -518,9 +524,8 @@ function LoanScreen({ loan, setLoan, incomes, assets, onBack, onNext, isEdit, on
               </div>
             </div>
           </div>
-
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', marginTop: '1.5rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', marginTop: '1.0rem' }}>
           <button
             className="bottom-button"
             style={{ 
@@ -544,7 +549,7 @@ function LoanScreen({ loan, setLoan, incomes, assets, onBack, onNext, isEdit, on
         <button
           className="bottom-button"
           disabled={!dsrCalculated}
-          onClick={isEdit ? onEditComplete : onNext}
+          onClick={e => { window.scrollTo(0,0); (isEdit ? onEditComplete : onNext)(e); }}
         >
           영끌 내집 확인하기 →
         </button>

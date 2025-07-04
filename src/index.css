@@ -64,7 +64,7 @@ body::after {
   margin: 0 auto;
   /* 완전 반응형 패딩 */
   padding: clamp(1rem, 4vw, 2rem);
-  padding-top: max(clamp(1rem, 4vw, 2rem), env(safe-area-inset-top));
+  padding-top: calc(max(clamp(1rem, 4vw, 2rem), env(safe-area-inset-top)) + 0.75rem);
   padding-left: max(clamp(1rem, 4vw, 2rem), env(safe-area-inset-left));
   padding-right: max(clamp(1rem, 4vw, 2rem), env(safe-area-inset-right));
   padding-bottom: clamp(5rem, 12vw, 6rem); /* CTA 버튼 공간 축소 */
@@ -101,7 +101,7 @@ body::after {
 /* 홈 화면도 하단 고정 버튼 사용 */
 .home-screen .screen-container {
   padding: clamp(1.5rem, 5vw, 2.5rem) clamp(1rem, 4vw, 1.5rem) clamp(5rem, 12vw, 6rem);
-  padding-top: max(clamp(1.5rem, 5vw, 2.5rem), env(safe-area-inset-top));
+  padding-top: calc(max(clamp(1.5rem, 5vw, 2.5rem), env(safe-area-inset-top)) + 0.75rem);
   padding-left: max(clamp(1rem, 4vw, 1.5rem), env(safe-area-inset-left));
   padding-right: max(clamp(1rem, 4vw, 1.5rem), env(safe-area-inset-right));
 }
@@ -419,7 +419,7 @@ body::after {
 @media (max-width: 480px) {
   .screen-container {
     padding: clamp(1rem, 4vw, 1.25rem);
-    padding-top: max(clamp(1rem, 4vw, 1.25rem), env(safe-area-inset-top));
+    padding-top: calc(max(clamp(1rem, 4vw, 1.25rem), env(safe-area-inset-top)) + 0.75rem);
     padding-bottom: clamp(4rem, 10vw, 5rem);
   }
   .form-group {
@@ -434,7 +434,7 @@ body::after {
   /* 홈 화면 */
   .home-screen .screen-container {
     padding: clamp(1rem, 4vw, 1.25rem);
-    padding-top: max(clamp(1rem, 4vw, 1.25rem), env(safe-area-inset-top));
+    padding-top: calc(max(clamp(1rem, 4vw, 1.25rem), env(safe-area-inset-top)) + 0.75rem);
     padding-bottom: clamp(4rem, 10vw, 5rem);
   }
   .selection-container {
@@ -456,7 +456,7 @@ body::after {
 @media (max-width: 360px) {
   .screen-container {
     padding: clamp(0.875rem, 3.5vw, 1rem);
-    padding-top: max(clamp(0.875rem, 3.5vw, 1rem), env(safe-area-inset-top));
+    padding-top: calc(max(clamp(0.875rem, 3.5vw, 1rem), env(safe-area-inset-top)) + 0.75rem);
     padding-bottom: clamp(4rem, 10vw, 5rem);
   }
   
@@ -512,7 +512,7 @@ body::after {
 @media (max-width: 320px) {
   .screen-container {
     padding: 0.75rem;
-    padding-top: max(0.75rem, env(safe-area-inset-top));
+    padding-top: calc(max(0.75rem, env(safe-area-inset-top)) + 0.75rem);
     padding-left: max(0.75rem, env(safe-area-inset-left));
     padding-right: max(0.75rem, env(safe-area-inset-right));
     padding-bottom: clamp(3.5rem, 12vw, 4.5rem);

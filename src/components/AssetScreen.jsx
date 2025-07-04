@@ -174,7 +174,7 @@ function AssetScreen({ assets, setAssets, onNext, onBack, isEdit, onEditComplete
         </button>
       </header>
       
-      <main>
+      <main style={{ paddingBottom: '56px' }}>
         <div className="total-display" style={{textAlign:'left', marginBottom:'2rem', marginTop:'12px'}}>
           <div className="label" style={{
             fontSize: 'clamp(0.875rem, 3vw, 1rem)',
@@ -192,7 +192,7 @@ function AssetScreen({ assets, setAssets, onNext, onBack, isEdit, onEditComplete
         </div>
 
         <div className="form-group">
-          {assetTypes.map(({ id, label, placeholder }) => (
+          {assetTypes.map(({ id, label, placeholder }, idx) => (
             <div key={id} className="input-card">
               <div className="label">{label}</div>
               <div className="input-wrapper asset-input">
@@ -205,10 +205,21 @@ function AssetScreen({ assets, setAssets, onNext, onBack, isEdit, onEditComplete
                     onChange={(e) => handleAssetChange(id, e.target.value)}
                     ref={id === 'cash' ? cashInputRef : null}
                     onKeyDown={(e) => handleKeyPress(e, id === 'insurance')}
+                    {...(idx > 0 ? {
+                      onFocus: e => {
+                        setTimeout(() => {
+                          const rect = e.target.getBoundingClientRect();
+                          window.scrollBy({ top: rect.top - 16, behavior: 'smooth' });
+                        }, 150);
+                      }
+                    } : {})}
                   />
                 </div>
               </div>
               <div className="korean-unit">{numberToKoreanDisplay(assets[id])}</div>
+              {idx === assetTypes.length - 1 && (
+                null
+              )}
             </div>
           ))}
         </div>
@@ -219,7 +230,7 @@ function AssetScreen({ assets, setAssets, onNext, onBack, isEdit, onEditComplete
           ref={ctaButtonRef}
           className="bottom-button"
           disabled={isNextDisabled}
-          onClick={isEdit ? onEditComplete : onNext}
+          onClick={e => { window.scrollTo(0,0); (isEdit ? onEditComplete : onNext)(e); }}
         >
           {isEdit ? '수정완료' : '다음 →'}
         </button>

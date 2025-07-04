@@ -8,12 +8,12 @@ const BackIcon = () => (
 
 function SettingScreen({ onBack, onShowPrivacy, onShowLicense }) {
   return (
-    <div className="screen-container" style={{minHeight:'100vh',background:'#101124',color:'#fff',paddingTop:0}}>
-      <header className="screen-header" style={{display:'flex',alignItems:'center',height:'56px',padding:'0 0.5rem'}}>
-        <button className="back-button" onClick={onBack} style={{marginLeft:'-8px',background:'none',border:'none',padding:0,cursor:'pointer'}} aria-label="뒤로가기">
+    <div className="screen-container">
+      <header className="screen-header">
+        <button className="back-button" onClick={onBack} style={{marginLeft:'-8px'}}>
           <BackIcon />
         </button>
-        <h1 className="screen-title" style={{fontSize:'1.2rem',fontWeight:700,marginLeft:'8px'}}>설정</h1>
+        <h1 className="screen-title">설정</h1>
       </header>
       <main style={{padding:'0 0.5rem'}}>
         <ul style={{listStyle:'none',padding:0,margin:0}}>
@@ -32,7 +32,7 @@ function SettingScreen({ onBack, onShowPrivacy, onShowLicense }) {
         </ul>
         <div style={{color:'#888',fontSize:'0.95rem'}}>
           <div style={{fontWeight:400,marginBottom:'0.2rem'}}>Version</div>
-          <div style={{fontWeight:400}}>1.4.0</div>
+          <div style={{fontWeight:400}}>1.4.2</div>
         </div>
       </main>
     </div>

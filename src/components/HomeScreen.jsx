@@ -2,8 +2,8 @@ function HomeScreen({ onStart, onSetting }) {
   return (
     <div className="home-screen">
       <div className="screen-container">
-        <div style={{position:'absolute',top:'16px',right:'16px',zIndex:2,display:'flex',gap:'8px'}}>
-          <button onClick={onSetting} style={{background:'none',border:'none',padding:0,cursor:'pointer'}} aria-label="설정">
+        <div style={{position:'absolute',right:'16px',zIndex:2,display:'flex',gap:'8px'}}>
+          <button onClick={onSetting} style={{background:'none',border:'none',padding:0,cursor:'pointer'}}>
             <span className="material-icons" style={{fontSize:'24px',color:'#fff'}}>settings</span>
           </button>
         </div>
