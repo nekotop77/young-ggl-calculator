@@ -8,7 +8,7 @@ const BackIcon = () => (
 
 function SettingDetailScreen({ title, src, onBack }) {
   return (
-    <div className="screen-container" style={{padding:0,background:'#101124',height:'100vh',width:'100vw',maxWidth:'100vw'}}>
+    <div className="screen-container" style={{background:'#101124',height:'100vh',width:'100vw',maxWidth:'100vw'}}>
       <div style={{position:'fixed',top:0,left:0,width:'100vw',height:'100vh',zIndex:1000,background:'#101124',display:'flex',flexDirection:'column'}}>
         <header className="screen-header">
           <button className="back-button" onClick={onBack} style={{marginLeft:'8px',background:'none',border:'none',padding:0,cursor:'pointer'}} aria-label="뒤로가기">

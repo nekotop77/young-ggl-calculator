@@ -1,6 +1,6 @@
 function HomeScreen({ onStart, onSetting }) {
   return (
-    <div className="home-screen">
+    <div className="screen-container">
       <div className="screen-container">
         <div style={{position:'absolute',right:'16px',zIndex:2,display:'flex',gap:'8px'}}>
           <button onClick={onSetting} style={{background:'none',border:'none',padding:0,cursor:'pointer'}}>

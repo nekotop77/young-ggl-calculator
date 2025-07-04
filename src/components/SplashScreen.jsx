@@ -2,7 +2,7 @@ import React from 'react';
 
 function SplashScreen() {
   return (
-    <div style={{
+    <div className="screen-container" style={{
       position: 'fixed',
       top: 0,
       left: 0,
