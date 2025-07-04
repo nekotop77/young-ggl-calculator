@@ -205,14 +205,11 @@ function AssetScreen({ assets, setAssets, onNext, onBack, isEdit, onEditComplete
                     onChange={(e) => handleAssetChange(id, e.target.value)}
                     ref={id === 'cash' ? cashInputRef : null}
                     onKeyDown={(e) => handleKeyPress(e, id === 'insurance')}
-                    {...(idx > 0 ? {
-                      onFocus: e => {
-                        setTimeout(() => {
-                          const rect = e.target.getBoundingClientRect();
-                          window.scrollBy({ top: rect.top - 16, behavior: 'smooth' });
-                        }, 150);
-                      }
-                    } : {})}
+                    onFocus={e => {
+                      setTimeout(() => {
+                        e.target.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                      }, 300);
+                    }}
                   />
                 </div>
               </div>

@@ -490,9 +490,8 @@ function LoanScreen({ loan, setLoan, incomes, assets, onBack, onNext, isEdit, on
                   onKeyDown={(e) => handleKeyPress(e, rateInputRef)}
                   onFocus={e => {
                     setTimeout(() => {
-                      const rect = e.target.getBoundingClientRect();
-                      window.scrollBy({ top: rect.top - 16, behavior: 'smooth' });
-                    }, 150);
+                      e.target.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                    }, 300);
                   }}
                 />
               </div>
@@ -513,9 +512,8 @@ function LoanScreen({ loan, setLoan, incomes, assets, onBack, onNext, isEdit, on
                   onFocus={e => {
                     if (e.target.value === '0') e.target.value = '';
                     setTimeout(() => {
-                      const rect = e.target.getBoundingClientRect();
-                      window.scrollBy({ top: rect.top - 16, behavior: 'smooth' });
-                    }, 150);
+                      e.target.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                    }, 300);
                   }}
                   onChange={e => handleLoanChange('rate', e.target.value)}
                   ref={rateInputRef}

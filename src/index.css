@@ -67,7 +67,7 @@ body::after {
   padding-top: calc(max(clamp(1rem, 4vw, 2rem), env(safe-area-inset-top)) + 1.5rem);
   padding-left: max(clamp(1rem, 4vw, 2rem), env(safe-area-inset-left));
   padding-right: max(clamp(1rem, 4vw, 2rem), env(safe-area-inset-right));
-  padding-bottom: clamp(5rem, 12vw, 6rem); /* CTA 버튼 공간 축소 */
+  padding-bottom: clamp(8rem, 20vw, 10rem); /* 기존보다 더 크게 */
   /* 스크롤 시 자연스러운 페이드를 위한 설정 */
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
@@ -100,7 +100,7 @@ body::after {
 
 /* 홈 화면도 하단 고정 버튼 사용 */
 .home-screen .screen-container {
-  padding: clamp(1.5rem, 5vw, 2.5rem) clamp(1rem, 4vw, 1.5rem) clamp(5rem, 12vw, 6rem);
+  padding: clamp(1.5rem, 5vw, 2.5rem) clamp(1rem, 4vw, 1.5rem) clamp(8rem, 20vw, 10rem);
   padding-top: calc(max(clamp(1.5rem, 5vw, 2.5rem), env(safe-area-inset-top)) + 1.5rem);
   padding-left: max(clamp(1rem, 4vw, 1.5rem), env(safe-area-inset-left));
   padding-right: max(clamp(1rem, 4vw, 1.5rem), env(safe-area-inset-right));
@@ -420,7 +420,7 @@ body::after {
   .screen-container {
     padding: clamp(1rem, 4vw, 1.25rem);
     padding-top: calc(max(clamp(1rem, 4vw, 1.25rem), env(safe-area-inset-top)) + 1.5rem);
-    padding-bottom: clamp(4rem, 10vw, 5rem);
+    padding-bottom: clamp(8rem, 20vw, 10rem);
   }
   .form-group {
     gap: 0.75rem;
@@ -435,7 +435,7 @@ body::after {
   .home-screen .screen-container {
     padding: clamp(1rem, 4vw, 1.25rem);
     padding-top: calc(max(clamp(1rem, 4vw, 1.25rem), env(safe-area-inset-top)) + 1.5rem);
-    padding-bottom: clamp(4rem, 10vw, 5rem);
+    padding-bottom: clamp(8rem, 20vw, 10rem);
   }
   .selection-container {
     flex-direction: row;
@@ -457,7 +457,7 @@ body::after {
   .screen-container {
     padding: clamp(0.875rem, 3.5vw, 1rem);
     padding-top: calc(max(clamp(0.875rem, 3.5vw, 1rem), env(safe-area-inset-top)) + 1.5rem);
-    padding-bottom: clamp(4rem, 10vw, 5rem);
+    padding-bottom: clamp(8rem, 20vw, 10rem);
   }
   
   .screen-header {
@@ -515,7 +515,7 @@ body::after {
     padding-top: calc(max(0.75rem, env(safe-area-inset-top)) + 1.5rem);
     padding-left: max(0.75rem, env(safe-area-inset-left));
     padding-right: max(0.75rem, env(safe-area-inset-right));
-    padding-bottom: clamp(3.5rem, 12vw, 4.5rem);
+    padding-bottom: clamp(8rem, 20vw, 10rem);
   }
   
   .screen-header {
@@ -575,7 +575,7 @@ body::after {
   .screen-container {
     max-width: 440px;
     padding: clamp(1.5rem, 4vw, 2rem);
-    padding-bottom: clamp(5rem, 12vw, 6rem);
+    padding-bottom: clamp(8rem, 20vw, 10rem);
   }
   
   .screen-title {
@@ -614,7 +614,7 @@ body::after {
   .screen-container {
     max-width: 500px;
     padding: clamp(2rem, 5vw, 2.5rem);
-    padding-bottom: clamp(5.5rem, 14vw, 7rem);
+    padding-bottom: clamp(8rem, 20vw, 10rem);
   }
   
   .main-title {
@@ -662,7 +662,7 @@ body::after {
   .screen-container {
     max-width: 500px;
     padding: clamp(2.5rem, 5vw, 3rem);
-    padding-bottom: clamp(6rem, 15vw, 8rem);
+    padding-bottom: clamp(8rem, 20vw, 10rem);
   }
   
   .main-title {

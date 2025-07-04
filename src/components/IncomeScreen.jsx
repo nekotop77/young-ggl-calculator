@@ -194,14 +194,11 @@ function IncomeScreen({ incomes, setIncomes, onNext, onBack, isEdit, onEditCompl
                     onChange={(e) => handleIncomeChange(id, e.target.value)}
                     ref={id === 'salary' ? salaryInputRef : null}
                     onKeyDown={(e) => handleKeyPress(e, id === 'other')}
-                    {...(idx > 0 ? {
-                      onFocus: e => {
-                        setTimeout(() => {
-                          const rect = e.target.getBoundingClientRect();
-                          window.scrollBy({ top: rect.top - 16, behavior: 'smooth' });
-                        }, 150);
-                      }
-                    } : {})}
+                    onFocus={e => {
+                      setTimeout(() => {
+                        e.target.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                      }, 300);
+                    }}
                   />
                 </div>
               </div>
