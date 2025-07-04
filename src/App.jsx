@@ -78,8 +78,8 @@ function App() {
     <>
       {step === 'home' && <HomeScreen onStart={goToAsset} onSetting={goToSetting} />}
       {step === 'setting' && <SettingScreen onBack={restart} onShowPrivacy={goToSettingPrivacy} onShowLicense={goToSettingLicense} />}
-      {step === 'setting-privacy' && <SettingDetailScreen title="개인정보 처리방침" src="/privacy.html" onBack={goToSetting} />}
-      {step === 'setting-license' && <SettingDetailScreen title="오픈소스라이선스" src="/license.html" onBack={goToSetting} />}
+      {step === 'setting-privacy' && <SettingDetailScreen title="개인정보 처리방침" src="https://young-ggl-calculator.vercel.app/privacy.html" onBack={goToSetting} />}
+      {step === 'setting-license' && <SettingDetailScreen title="오픈소스라이선스" src="https://young-ggl-calculator.vercel.app/license.html" onBack={goToSetting} />}
       {step === 'asset' && <AssetScreen assets={assets} setAssets={setAssets} onNext={goToIncome} onBack={goToAssetBackToHome} />}
       {step === 'income' && <IncomeScreen incomes={incomes} setIncomes={setIncomes} onNext={goToLoan} onBack={goToAsset} loan={loan} />}
       {(step === 'loan' || step === 'loanFromResult') && (
