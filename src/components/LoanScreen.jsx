@@ -24,6 +24,7 @@ function LoanScreen({ loan, setLoan, incomes, assets, onBack, onNext, isEdit, on
   const [dsrCalculated, setDsrCalculated] = useState(false);
   const [monthlyPayment, setMonthlyPayment] = useState(0);
   const [dsr, setDsr] = useState(0);
+  const [keyboardOpen, setKeyboardOpen] = useState(false);
 
   useEffect(() => {
     if (loanAmountInputRef.current) {
@@ -45,6 +46,24 @@ function LoanScreen({ loan, setLoan, incomes, assets, onBack, onNext, isEdit, on
     }
     // eslint-disable-next-line
   }, [isEdit]);
+
+  useEffect(() => {
+    // loanType이 없으면 기본값을 '원리금균등'으로 설정
+    if (!loan.loanType) {
+      setLoan(prev => ({ ...prev, loanType: '원리금균등' }));
+    }
+  }, []);
+
+  useEffect(() => {
+    const handleFocusIn = () => setKeyboardOpen(true);
+    const handleFocusOut = () => setKeyboardOpen(false);
+    window.addEventListener('focusin', handleFocusIn);
+    window.addEventListener('focusout', handleFocusOut);
+    return () => {
+      window.removeEventListener('focusin', handleFocusIn);
+      window.removeEventListener('focusout', handleFocusOut);
+    };
+  }, []);
 
   const handleLoanChange = (id, value) => {
     if (id === 'loanType') {
@@ -405,7 +424,7 @@ function LoanScreen({ loan, setLoan, incomes, assets, onBack, onNext, isEdit, on
         <button className="back-button" onClick={onBack} style={{marginLeft: '-8px'}}><BackIcon /></button>
         <h1 className="screen-title">대출</h1>
       </header>
-      <main style={{ paddingBottom: '56px' }}>
+      <main style={{ paddingBottom: keyboardOpen ? '20rem' : '3rem' }}>
         <div className="total-display" style={{marginTop:'12px', marginBottom:'32px'}}>
           <div className="label" style={{marginBottom: '0.5rem'}}>
             소득 <span style={{color: '#ffffff', fontWeight: 700}}>{numberToKoreanDisplay(totalIncome)}</span> 기준
@@ -490,8 +509,7 @@ function LoanScreen({ loan, setLoan, incomes, assets, onBack, onNext, isEdit, on
                   onKeyDown={(e) => handleKeyPress(e, rateInputRef)}
                   onFocus={e => {
                     setTimeout(() => {
-                      const rect = e.target.getBoundingClientRect();
-                      window.scrollBy({ top: rect.top - 16, behavior: 'smooth' });
+                      e.target.scrollIntoView({ block: 'center', behavior: 'smooth' });
                     }, 150);
                   }}
                 />
@@ -513,8 +531,7 @@ function LoanScreen({ loan, setLoan, incomes, assets, onBack, onNext, isEdit, on
                   onFocus={e => {
                     if (e.target.value === '0') e.target.value = '';
                     setTimeout(() => {
-                      const rect = e.target.getBoundingClientRect();
-                      window.scrollBy({ top: rect.top - 16, behavior: 'smooth' });
+                      e.target.scrollIntoView({ block: 'center', behavior: 'smooth' });
                     }, 150);
                   }}
                   onChange={e => handleLoanChange('rate', e.target.value)}

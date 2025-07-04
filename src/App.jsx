@@ -14,7 +14,7 @@ function App() {
   const [step, setStep] = useState('home');
   const [assets, setAssets] = useState({ cash: 0, stocks: 0, severance: 0, insurance: 0 });
   const [incomes, setIncomes] = useState({ salary: 0, bonus: 0, side: 0, other: 0 });
-  const [loan, setLoan] = useState({ loanType: '원금균등', finance: '40', years: 0, rate: 0, loanAmount: 0, dsr: 0, dsrCalculated: false });
+  const [loan, setLoan] = useState({ loanType: '원리금균등', finance: '40', years: 0, rate: 0, loanAmount: 0, dsr: 0, dsrCalculated: false });
 
   // 화면 이동 핸들러
   const goToAsset = () => setStep('asset'); // A02
@@ -28,7 +28,7 @@ function App() {
   const restart = () => {
     setAssets({ cash: 0, stocks: 0, severance: 0, insurance: 0 });
     setIncomes({ salary: 0, bonus: 0, side: 0, other: 0 });
-    setLoan({ loanType: '원금균등', finance: '40', years: 0, rate: 0, loanAmount: 0, dsr: 0, dsrCalculated: false });
+    setLoan({ loanType: '원리금균등', finance: '40', years: 0, rate: 0, loanAmount: 0, dsr: 0, dsrCalculated: false });
     setStep('home');
   };
   const goToAssetBackToHome = () => setStep('home');

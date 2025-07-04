@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useMemo } from 'react';
+import React, { useRef, useEffect, useMemo, useState } from 'react';
 
 const BackIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -9,11 +9,23 @@ const BackIcon = () => (
 function IncomeScreen({ incomes, setIncomes, onNext, onBack, isEdit, onEditComplete, loan }) {
   const salaryInputRef = useRef(null);
   const ctaButtonRef = useRef(null);
+  const [keyboardOpen, setKeyboardOpen] = useState(false);
 
   useEffect(() => {
     if (salaryInputRef.current) {
       salaryInputRef.current.focus();
     }
+  }, []);
+
+  useEffect(() => {
+    const handleFocusIn = () => setKeyboardOpen(true);
+    const handleFocusOut = () => setKeyboardOpen(false);
+    window.addEventListener('focusin', handleFocusIn);
+    window.addEventListener('focusout', handleFocusOut);
+    return () => {
+      window.removeEventListener('focusin', handleFocusIn);
+      window.removeEventListener('focusout', handleFocusOut);
+    };
   }, []);
 
   const handleIncomeChange = (id, value) => {
@@ -164,7 +176,7 @@ function IncomeScreen({ incomes, setIncomes, onNext, onBack, isEdit, onEditCompl
           초기화
         </button>
       </header>
-      <main style={{ paddingBottom: '56px' }}>
+      <main style={{ paddingBottom: keyboardOpen ? '20rem' : '3rem' }}>
         <div className="total-display" style={{textAlign:'left', marginBottom:'2rem', marginTop:'12px'}}>
           <div className="label" style={{
             fontSize: 'clamp(0.875rem, 3vw, 1rem)',
@@ -194,14 +206,11 @@ function IncomeScreen({ incomes, setIncomes, onNext, onBack, isEdit, onEditCompl
                     onChange={(e) => handleIncomeChange(id, e.target.value)}
                     ref={id === 'salary' ? salaryInputRef : null}
                     onKeyDown={(e) => handleKeyPress(e, id === 'other')}
-                    {...(idx > 0 ? {
-                      onFocus: e => {
-                        setTimeout(() => {
-                          const rect = e.target.getBoundingClientRect();
-                          window.scrollBy({ top: rect.top - 16, behavior: 'smooth' });
-                        }, 150);
-                      }
-                    } : {})}
+                    onFocus={e => {
+                      setTimeout(() => {
+                        e.target.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                      }, 150);
+                    }}
                   />
                 </div>
               </div>

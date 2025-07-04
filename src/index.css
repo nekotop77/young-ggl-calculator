@@ -99,18 +99,18 @@ body::after {
 }
 
 /* 홈 화면도 하단 고정 버튼 사용 */
-/* .home-screen .screen-container {
+.home-screen .screen-container {
   padding: clamp(1.5rem, 5vw, 2.5rem) clamp(1rem, 4vw, 1.5rem) clamp(8rem, 20vw, 10rem);
   padding-top: calc(max(clamp(1.5rem, 5vw, 2.5rem), env(safe-area-inset-top)) + 1.5rem);
   padding-left: max(clamp(1rem, 4vw, 1.5rem), env(safe-area-inset-left));
   padding-right: max(clamp(1rem, 4vw, 1.5rem), env(safe-area-inset-right));
-} */
+}
 
-/* .home-screen .screen-container > main {
+.home-screen .screen-container > main {
   padding: 0;
   padding-bottom: 0;
   overflow: visible;
-} */
+}
 
 .status-bar {
   display: flex;

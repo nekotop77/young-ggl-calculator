@@ -80,11 +80,23 @@ const assetTypes = [
 function AssetScreen({ assets, setAssets, onNext, onBack, isEdit, onEditComplete }) {
   const cashInputRef = useRef(null);
   const ctaButtonRef = useRef(null);
+  const [keyboardOpen, setKeyboardOpen] = useState(false);
 
   useEffect(() => {
     if (cashInputRef.current) {
       cashInputRef.current.focus();
     }
+  }, []);
+
+  useEffect(() => {
+    const handleFocusIn = () => setKeyboardOpen(true);
+    const handleFocusOut = () => setKeyboardOpen(false);
+    window.addEventListener('focusin', handleFocusIn);
+    window.addEventListener('focusout', handleFocusOut);
+    return () => {
+      window.removeEventListener('focusin', handleFocusIn);
+      window.removeEventListener('focusout', handleFocusOut);
+    };
   }, []);
 
   const handleKeyPress = (e, isLastField = false) => {
@@ -174,7 +186,7 @@ function AssetScreen({ assets, setAssets, onNext, onBack, isEdit, onEditComplete
         </button>
       </header>
       
-      <main style={{ paddingBottom: '56px' }}>
+      <main style={{ paddingBottom: keyboardOpen ? '20rem' : '3rem' }}>
         <div className="total-display" style={{textAlign:'left', marginBottom:'2rem', marginTop:'12px'}}>
           <div className="label" style={{
             fontSize: 'clamp(0.875rem, 3vw, 1rem)',
@@ -205,14 +217,11 @@ function AssetScreen({ assets, setAssets, onNext, onBack, isEdit, onEditComplete
                     onChange={(e) => handleAssetChange(id, e.target.value)}
                     ref={id === 'cash' ? cashInputRef : null}
                     onKeyDown={(e) => handleKeyPress(e, id === 'insurance')}
-                    {...(idx > 0 ? {
-                      onFocus: e => {
-                        setTimeout(() => {
-                          const rect = e.target.getBoundingClientRect();
-                          window.scrollBy({ top: rect.top - 16, behavior: 'smooth' });
-                        }, 150);
-                      }
-                    } : {})}
+                    onFocus={e => {
+                      setTimeout(() => {
+                        e.target.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                      }, 150);
+                    }}
                   />
                 </div>
               </div>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 const BackIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -7,10 +7,26 @@ const BackIcon = () => (
 );
 
 function SettingDetailScreen({ title, src, onBack }) {
+  useEffect(() => {
+    const handlePopState = (e) => {
+      e.preventDefault && e.preventDefault();
+      onBack();
+    };
+    window.addEventListener('popstate', handlePopState);
+    // Capacitor/Cordova 환경 대응
+    const handleNativeBack = () => {
+      onBack();
+    };
+    document.addEventListener('backbutton', handleNativeBack, false);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+      document.removeEventListener('backbutton', handleNativeBack, false);
+    };
+  }, [onBack]);
   return (
     <div className="screen-container" style={{background:'#101124',height:'100vh',width:'100vw',maxWidth:'100vw'}}>
       <div style={{position:'fixed',top:0,left:0,width:'100vw',height:'100vh',zIndex:1000,background:'#101124',display:'flex',flexDirection:'column'}}>
-        <header className="screen-header">
+        <header className="screen-header" style={{paddingTop:'calc(env(safe-area-inset-top, 0px) + 1rem)'}}>
           <button className="back-button" onClick={onBack} style={{marginLeft:'8px',background:'none',border:'none',padding:0,cursor:'pointer'}} aria-label="뒤로가기">
             <BackIcon />
           </button>
