@@ -231,13 +231,18 @@ body::after {
 /* A02 Assets Screen */
 .screen-header {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  margin-bottom: clamp(0.75rem, 2vw, 1rem);
-  height: clamp(40px, 10vw, 44px);
-  width: 100%;
-  /* 패딩 제거 - 상위 컨테이너에서 처리 */
-  padding-top: env(safe-area-inset-top, 24px);
-  box-sizing: border-box;
+  padding: 1rem 1.5rem 0;
+  padding-top: calc(max(env(safe-area-inset-top, 0px), 48px)); /* 스테이터스바 겹침 완전 방지 */
+  position: relative;
+  z-index: 10;
+  top: 0;
+  left: 0;
+  right: 0;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 600;
+  font-size: 0.9rem;
 }
 
 .back-button {
