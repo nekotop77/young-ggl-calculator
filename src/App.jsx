@@ -74,6 +74,36 @@ function App() {
     }
   }, [step]);
 
+  useEffect(() => {
+    const handleBackButton = (e) => {
+      if (e && e.preventDefault) e.preventDefault();
+      if (e && e.stopImmediatePropagation) e.stopImmediatePropagation();
+      // step별 내부 뒤로가기 분기
+      if (step === 'setting-privacy' || step === 'setting-license') {
+        setStep('setting');
+      } else if (step === 'setting') {
+        setStep('home');
+      } else if (step === 'asset') {
+        setStep('home');
+      } else if (step === 'income') {
+        setStep('asset');
+      } else if (step === 'loan' || step === 'loanFromResult') {
+        setStep('income');
+      } else if (step === 'A04-1') {
+        setStep('loan');
+      } else if (step === 'result') {
+        setStep('loanFromResult');
+      } else {
+        // 홈 등에서는 디폴트(앱 종료) 허용
+        window.history.back();
+      }
+    };
+    document.addEventListener('backbutton', handleBackButton, false);
+    return () => {
+      document.removeEventListener('backbutton', handleBackButton, false);
+    };
+  }, [step]);
+
   return (
     <>
       {step === 'home' && <HomeScreen onStart={goToAsset} onSetting={goToSetting} />}

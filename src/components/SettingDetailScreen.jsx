@@ -9,18 +9,13 @@ const BackIcon = () => (
 function SettingDetailScreen({ title, src, onBack }) {
   useEffect(() => {
     const handlePopState = (e) => {
-      e.preventDefault && e.preventDefault();
+      if (e && e.preventDefault) e.preventDefault();
+      if (e && e.stopImmediatePropagation) e.stopImmediatePropagation();
       onBack();
     };
     window.addEventListener('popstate', handlePopState);
-    // Capacitor/Cordova 환경 대응
-    const handleNativeBack = () => {
-      onBack();
-    };
-    document.addEventListener('backbutton', handleNativeBack, false);
     return () => {
       window.removeEventListener('popstate', handlePopState);
-      document.removeEventListener('backbutton', handleNativeBack, false);
     };
   }, [onBack]);
   return (

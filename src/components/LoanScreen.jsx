@@ -25,6 +25,9 @@ function LoanScreen({ loan, setLoan, incomes, assets, onBack, onNext, isEdit, on
   const [monthlyPayment, setMonthlyPayment] = useState(0);
   const [dsr, setDsr] = useState(0);
   const [keyboardOpen, setKeyboardOpen] = useState(false);
+  const [stressDsr, setStressDsr] = useState(null);
+  const [stressLimit, setStressLimit] = useState(null);
+  const [stressMonthly, setStressMonthly] = useState(null);
 
   useEffect(() => {
     if (loanAmountInputRef.current) {
@@ -209,16 +212,12 @@ function LoanScreen({ loan, setLoan, incomes, assets, onBack, onNext, isEdit, on
   // 총 대출금액 계산 (자산 입력값 합계)
   const totalLoanAmount = Object.values(assets).reduce((sum, val) => sum + Number(val), 0);
 
-
-
   // 월 납입 계산 함수 (상환방식별)
   const calculateMonthlyPayment = (principal, annualRate, years, loanType) => {
     if (principal <= 0 || annualRate <= 0 || years <= 0) return 0;
     
     const monthlyRate = annualRate / 100 / 12;
     const totalMonths = years * 12;
-    
-
     
     switch (loanType) {
       case '원리금균등': {
@@ -227,8 +226,6 @@ function LoanScreen({ loan, setLoan, incomes, assets, onBack, onNext, isEdit, on
         const factor = Math.pow(1 + monthlyRate, totalMonths);
         const numerator = monthlyRate * factor;
         const denominator = factor - 1;
-        
-
         
         if (denominator === 0) return 0;
         const result = principal * (numerator / denominator);
@@ -301,8 +298,6 @@ function LoanScreen({ loan, setLoan, incomes, assets, onBack, onNext, isEdit, on
         const totalCoeff = principalCoeff + interestCoeff;
         const result = Math.floor(maxMonthlyPayment / totalCoeff);
         
-
-        
         return result;
       }
       case '만기일시': {
@@ -320,7 +315,32 @@ function LoanScreen({ loan, setLoan, incomes, assets, onBack, onNext, isEdit, on
 
   const maxLoanAmount = calcMaxLoanAmount();
 
+  // 스트레스 DSR 계산 함수
+  const calcStressDSR = () => {
+    const stressYears = 5;
+    const stressRate = Math.max(Number(loan.rate) + 1, 4); // 입력금리+1%, 최소4%
+    const stressLimitRatio = loan.finance === '50' ? 0.5 : 0.4;
+    const income = Object.values(incomes).reduce((sum, val) => sum + Number(val), 0);
+    if (!income || !stressRate) return {dsr: 0, limit: 0, monthly: 0};
+    // 스트레스DSR 한도
+    const limit = income * stressLimitRatio;
+    // 월상환액(원리금균등, 5년, 스트레스금리)
+    const principal = loan.loanAmount;
+    const r = stressRate / 100 / 12;
+    const n = stressYears * 12;
+    let monthly = 0;
+    if (principal > 0 && r > 0 && n > 0) {
+      const factor = Math.pow(1 + r, n);
+      monthly = principal * (r * factor) / (factor - 1);
+    }
+    const annual = monthly * 12;
+    const dsr = income > 0 ? Math.round((annual / income) * 10000) / 100 : 0;
+    return { dsr, limit, monthly };
+  };
+
   const handleDsrCalc = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setKeyboardOpen(false);
     // 동일 조건에서 비교 테스트 (5억원 기준)
     const testAmount = 500000000; // 5억원
     if (loan.years > 0 && loan.rate > 0) {
@@ -389,12 +409,16 @@ function LoanScreen({ loan, setLoan, incomes, assets, onBack, onNext, isEdit, on
       dsrValue = Math.round(dsrValue * 100) / 100;
     }
 
-
-
     setMonthlyPayment(actualMonthlyPayment);
     setDsr(dsrValue);
     setDsrCalculated(true);
     setLoan(prev => ({ ...prev, monthlyPayment: actualMonthlyPayment, loanAmount: actualLoanAmount, dsr: dsrValue, dsrCalculated: true }));
+
+    // 스트레스 DSR 계산 추가
+    const stress = calcStressDSR();
+    setStressDsr(stress.dsr);
+    setStressLimit(stress.limit);
+    setStressMonthly(stress.monthly);
   };
 
   // DSR 계산 버튼 활성화 조건 (대출금액이 0이어도 작동)
@@ -418,10 +442,21 @@ function LoanScreen({ loan, setLoan, incomes, assets, onBack, onNext, isEdit, on
     }
   };
 
+  const handleNext = (e) => {
+    setKeyboardOpen(false);
+    if (isEdit && onEditComplete) onEditComplete(e);
+    else if (onNext) onNext(e);
+  };
+
+  const handleBack = (e) => {
+    setKeyboardOpen(false);
+    if (onBack) onBack(e);
+  };
+
   return (
     <div className="screen-container">
       <header className="screen-header">
-        <button className="back-button" onClick={onBack} style={{marginLeft: '-8px'}}><BackIcon /></button>
+        <button className="back-button" onClick={handleBack} style={{marginLeft: '-8px'}}><BackIcon /></button>
         <h1 className="screen-title">대출</h1>
       </header>
       <main style={{ paddingBottom: keyboardOpen ? '20rem' : '3rem' }}>
@@ -566,7 +601,7 @@ function LoanScreen({ loan, setLoan, incomes, assets, onBack, onNext, isEdit, on
         <button
           className="bottom-button"
           disabled={!dsrCalculated}
-          onClick={e => { window.scrollTo(0,0); (isEdit ? onEditComplete : onNext)(e); }}
+          onClick={handleNext}
         >
           영끌 내집 확인하기 →
         </button>

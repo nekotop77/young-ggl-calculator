@@ -154,10 +154,21 @@ function IncomeScreen({ incomes, setIncomes, onNext, onBack, isEdit, onEditCompl
     }
   };
 
+  const handleNext = (e) => {
+    setKeyboardOpen(false);
+    if (isEdit && onEditComplete) onEditComplete(e);
+    else if (onNext) onNext(e);
+  };
+
+  const handleBack = (e) => {
+    setKeyboardOpen(false);
+    if (onBack) onBack(e);
+  };
+
   return (
     <div className="screen-container">
       <header className="screen-header">
-        <button className="back-button" onClick={onBack} style={{marginLeft: '-8px'}}><BackIcon /></button>
+        <button className="back-button" onClick={handleBack} style={{marginLeft: '-8px'}}><BackIcon /></button>
         <h1 className="screen-title">소득</h1>
         <button 
           className="reset-button" 
@@ -225,7 +236,7 @@ function IncomeScreen({ incomes, setIncomes, onNext, onBack, isEdit, onEditCompl
           ref={ctaButtonRef}
           className="bottom-button"
           disabled={isNextDisabled}
-          onClick={e => { window.scrollTo(0,0); (isEdit ? onEditComplete : onNext)(e); }}
+          onClick={handleNext}
         >
           {isEdit ? '수정완료' : '다음 →'}
         </button>
