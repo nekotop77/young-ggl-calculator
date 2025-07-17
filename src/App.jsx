@@ -9,6 +9,7 @@ import SettingScreen from './components/SettingScreen';
 import SettingDetailScreen from './components/SettingDetailScreen';
 import { analytics } from "./firebase";
 import { logEvent } from "firebase/analytics";
+import { App as CapApp } from '@capacitor/app';
 
 function App() {
   const [step, setStep] = useState('home');
@@ -101,6 +102,37 @@ function App() {
     document.addEventListener('backbutton', handleBackButton, false);
     return () => {
       document.removeEventListener('backbutton', handleBackButton, false);
+    };
+  }, [step]);
+
+  // 안드로이드 하드웨어 뒤로가기: step 상태에 따라 직접 분기 처리
+  useEffect(() => {
+    const backHandler = (event) => {
+      if (event && event.preventDefault) event.preventDefault();
+      // step별 내부 뒤로가기 분기
+      if (step === 'setting-privacy' || step === 'setting-license') {
+        setStep('setting');
+      } else if (step === 'setting') {
+        setStep('home');
+      } else if (step === 'asset') {
+        setStep('home');
+      } else if (step === 'income') {
+        setStep('asset');
+      } else if (step === 'loan' || step === 'loanFromResult') {
+        setStep('income');
+      } else if (step === 'A04-1') {
+        setStep('loan');
+      } else if (step === 'result') {
+        setStep('loanFromResult');
+      } else {
+        // 홈 등에서는 앱 종료(백그라운드로 내리기)
+        CapApp.exitApp();
+      }
+    };
+    const remove = CapApp.addListener('backButton', backHandler);
+    return () => {
+      remove && remove();
+      CapApp.removeAllListeners && CapApp.removeAllListeners('backButton');
     };
   }, [step]);
 
