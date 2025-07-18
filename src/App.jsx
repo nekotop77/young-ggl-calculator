@@ -9,7 +9,16 @@ import SettingScreen from './components/SettingScreen';
 import SettingDetailScreen from './components/SettingDetailScreen';
 import { analytics } from "./firebase";
 import { logEvent } from "firebase/analytics";
-import { App as CapApp } from '@capacitor/app';
+
+// 조건부로 Capacitor import
+let CapApp;
+if (typeof window !== 'undefined' && window.Capacitor) {
+  try {
+    CapApp = require('@capacitor/app').App;
+  } catch (error) {
+    console.log('Capacitor App not available in web environment');
+  }
+}
 
 function App() {
   const [step, setStep] = useState('home');
@@ -75,64 +84,108 @@ function App() {
     }
   }, [step]);
 
+  // Android 하드웨어 뒤로가기 버튼 이벤트 처리
   useEffect(() => {
-    const handleBackButton = (e) => {
-      if (e && e.preventDefault) e.preventDefault();
-      if (e && e.stopImmediatePropagation) e.stopImmediatePropagation();
-      // step별 내부 뒤로가기 분기
+    if (!CapApp) return; // 웹 환경에서는 실행하지 않음
+    
+    const handleBackButton = () => {
+      console.log('Android back button pressed, current step:', step);
+      
+      // step별 내부 뒤로가기 분기 처리
       if (step === 'setting-privacy' || step === 'setting-license') {
+        console.log('Back to setting screen');
         setStep('setting');
       } else if (step === 'setting') {
+        console.log('Back to home screen');
         setStep('home');
       } else if (step === 'asset') {
+        console.log('Back to home screen');
         setStep('home');
       } else if (step === 'income') {
+        console.log('Back to asset screen');
         setStep('asset');
       } else if (step === 'loan' || step === 'loanFromResult') {
+        console.log('Back to income screen');
         setStep('income');
       } else if (step === 'A04-1') {
+        console.log('Back to loan screen');
         setStep('loan');
       } else if (step === 'result') {
+        console.log('Back to loan screen (edit mode)');
         setStep('loanFromResult');
       } else {
-        // 홈 등에서는 디폴트(앱 종료) 허용
-        window.history.back();
-      }
-    };
-    document.addEventListener('backbutton', handleBackButton, false);
-    return () => {
-      document.removeEventListener('backbutton', handleBackButton, false);
-    };
-  }, [step]);
-
-  // 안드로이드 하드웨어 뒤로가기: step 상태에 따라 직접 분기 처리
-  useEffect(() => {
-    const backHandler = (event) => {
-      if (event && event.preventDefault) event.preventDefault();
-      // step별 내부 뒤로가기 분기
-      if (step === 'setting-privacy' || step === 'setting-license') {
-        setStep('setting');
-      } else if (step === 'setting') {
-        setStep('home');
-      } else if (step === 'asset') {
-        setStep('home');
-      } else if (step === 'income') {
-        setStep('asset');
-      } else if (step === 'loan' || step === 'loanFromResult') {
-        setStep('income');
-      } else if (step === 'A04-1') {
-        setStep('loan');
-      } else if (step === 'result') {
-        setStep('loanFromResult');
-      } else {
-        // 홈 등에서는 앱 종료(백그라운드로 내리기)
+        // 홈 화면에서는 앱 종료(백그라운드로 내리기)
+        console.log('Exit app');
         CapApp.exitApp();
       }
     };
-    const remove = CapApp.addListener('backButton', backHandler);
+
+    // Capacitor App 플러그인의 backButton 이벤트 리스너 등록
+    const removeListener = CapApp.addListener('backButton', handleBackButton);
+    
     return () => {
-      remove && remove();
-      CapApp.removeAllListeners && CapApp.removeAllListeners('backButton');
+      // 컴포넌트 언마운트 시 리스너 제거
+      if (removeListener && typeof removeListener.remove === 'function') {
+        removeListener.remove();
+      }
+    };
+  }, [step]);
+
+  // 웹 환경에서의 뒤로가기 처리 (브라우저 뒤로가기 버튼)
+  useEffect(() => {
+    const handleWebBackButton = (e) => {
+      console.log('Web back button event received, current step:', step);
+      
+      // 이벤트 전파 중단
+      if (e && e.preventDefault) e.preventDefault();
+      if (e && e.stopImmediatePropagation) e.stopImmediatePropagation();
+      if (e && e.stopPropagation) e.stopPropagation();
+      
+      // step별 내부 뒤로가기 분기 (Android와 동일한 로직)
+      if (step === 'setting-privacy' || step === 'setting-license') {
+        console.log('Back to setting screen');
+        setStep('setting');
+      } else if (step === 'setting') {
+        console.log('Back to home screen');
+        setStep('home');
+      } else if (step === 'asset') {
+        console.log('Back to home screen');
+        setStep('home');
+      } else if (step === 'income') {
+        console.log('Back to asset screen');
+        setStep('asset');
+      } else if (step === 'loan' || step === 'loanFromResult') {
+        console.log('Back to income screen');
+        setStep('income');
+      } else if (step === 'A04-1') {
+        console.log('Back to loan screen');
+        setStep('loan');
+      } else if (step === 'result') {
+        console.log('Back to loan screen (edit mode)');
+        setStep('loanFromResult');
+      } else {
+        // 홈 등에서는 브라우저 기본 뒤로가기 허용
+        console.log('Allow browser back navigation');
+        window.history.back();
+      }
+    };
+    
+    // 웹뷰에서 발생하는 backbutton 이벤트 리스너 등록
+    document.addEventListener('backbutton', handleWebBackButton, true);
+    
+    // 추가로 keydown 이벤트도 처리 (Android 하드웨어 키)
+    const handleKeyDown = (e) => {
+      if (e.key === 'Backspace' || e.keyCode === 8) {
+        console.log('Backspace key detected, treating as back button');
+        handleWebBackButton(e);
+      }
+    };
+    
+    document.addEventListener('keydown', handleKeyDown, true);
+    
+    return () => {
+      document.removeEventListener('backbutton', handleWebBackButton, true);
+      document.removeEventListener('keydown', handleKeyDown, true);
     };
   }, [step]);
 
