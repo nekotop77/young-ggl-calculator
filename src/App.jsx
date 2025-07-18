@@ -82,6 +82,11 @@ function App() {
     if (screenName) {
       logEvent(analytics, "screen_view", { firebase_screen: screenName });
     }
+    
+    // 현재 화면 상태를 window 객체에 저장 (MainActivity에서 확인용)
+    if (typeof window !== 'undefined') {
+      window.currentStep = step;
+    }
   }, [step]);
 
   // Android 하드웨어 뒤로가기 버튼 이벤트 처리
@@ -114,9 +119,14 @@ function App() {
         console.log('Back to loan screen (edit mode)');
         setStep('loanFromResult');
       } else {
-        // 홈 화면에서는 앱 종료(백그라운드로 내리기)
-        console.log('Exit app');
-        CapApp.exitApp();
+        // 홈 화면에서는 앱을 백그라운드로 내리기
+        console.log('Move app to background');
+        if (CapApp && CapApp.minimizeApp) {
+          CapApp.minimizeApp();
+        } else {
+          // fallback: 앱 종료
+          CapApp.exitApp();
+        }
       }
     };
 
