@@ -597,7 +597,7 @@ function ResultScreen({ assets, incomes, loan, caseType, onRestart, onEdit }) {
                 border: '1px solid rgba(255, 165, 0, 0.3)'
               }}>
                 <div style={{color: '#FFA500', fontSize: '14px'}}>
-                  수도권 대출 최대 6억원으로 제한됩니다
+                  DSR이 남았지만 수도권 대출 <strong>최대 6억</strong>으로 제한됩니다
                 </div>
               </div>
             )}
