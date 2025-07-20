@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { analytics } from "../firebase";
 import { logEvent } from "firebase/analytics";
 
@@ -124,7 +124,7 @@ class LoanRegulation {
   }
 }
 
-function ResultScreen({ assets, incomes, loan, onRestart, onEdit }) {
+function ResultScreen({ assets, incomes, loan, caseType, onRestart, onEdit }) {
   const [selectedLtv, setSelectedLtv] = useState('50'); // 기본값 LTV 50%
 
   // 합계 계산
@@ -132,8 +132,12 @@ function ResultScreen({ assets, incomes, loan, onRestart, onEdit }) {
   const totalIncome = Object.values(incomes).reduce((sum, val) => sum + Number(val), 0);
   const totalLoan = loan.loanAmount || 0;
   
-  // LTV 옵션
-  const ltvOptions = [
+  // LTV 옵션 - caseType에 따라 다르게 설정
+  const ltvOptions = caseType === '250628' ? [
+    { value: '50', label: 'LTV 50%', ratio: 0.5, description: '규제지역 LTV 50%' },
+    { value: '70', label: 'LTV 70%', ratio: 0.7, description: '비규제지역(수도권) LTV 70%' },
+    { value: '70_local', label: 'LTV 70%', ratio: 0.7, description: '비규제지역(지방) LTV 70%' }
+  ] : [
     { value: '50', label: 'LTV 50%', ratio: 0.5, description: '규제지역 LTV 50%' },
     { value: '70', label: 'LTV 70%', ratio: 0.7, description: '비규제지역 LTV 70%' }
   ];
@@ -242,16 +246,35 @@ function ResultScreen({ assets, incomes, loan, onRestart, onEdit }) {
     // DSR vs LTV 중 더 제한적인 조건 적용
     let actualLoan, actualHousePrice, limitingFactor;
     
-    if (dsrBasedMaxLoan <= maxLoanByLtv) {
-      // DSR이 제한 요소인 경우
-      actualLoan = dsrBasedMaxLoan;
-      actualHousePrice = totalAssets + actualLoan;
-      limitingFactor = 'DSR';
+    // 250628 케이스에서 수도권 규제지역/비규제지역은 6억원 한도 적용
+    if (caseType === '250628' && (selectedLtv === '50' || selectedLtv === '70')) {
+      const maxLoanWithLimit = Math.min(dsrBasedMaxLoan, 600000000); // 6억원 한도
+      const maxLoanByLtvWithLimit = Math.min(maxLoanByLtv, 600000000); // 6억원 한도
+      
+      if (maxLoanWithLimit <= maxLoanByLtvWithLimit) {
+        // DSR이 제한 요소인 경우
+        actualLoan = maxLoanWithLimit;
+        actualHousePrice = totalAssets + actualLoan;
+        limitingFactor = 'DSR';
+      } else {
+        // LTV가 제한 요소인 경우
+        actualLoan = maxLoanByLtvWithLimit;
+        actualHousePrice = totalAssets + actualLoan;
+        limitingFactor = 'LTV';
+      }
     } else {
-      // LTV가 제한 요소인 경우
-      actualLoan = maxLoanByLtv;
-      actualHousePrice = maxHousePriceByLtv;
-      limitingFactor = 'LTV';
+      // 기본형 또는 지방 비규제지역 (6억원 한도 없음)
+      if (dsrBasedMaxLoan <= maxLoanByLtv) {
+        // DSR이 제한 요소인 경우
+        actualLoan = dsrBasedMaxLoan;
+        actualHousePrice = totalAssets + actualLoan;
+        limitingFactor = 'DSR';
+      } else {
+        // LTV가 제한 요소인 경우
+        actualLoan = maxLoanByLtv;
+        actualHousePrice = maxHousePriceByLtv;
+        limitingFactor = 'LTV';
+      }
     }
     
     // 실제 LTV 비율 계산
@@ -392,6 +415,44 @@ function ResultScreen({ assets, incomes, loan, onRestart, onEdit }) {
     if (onRestart) onRestart();
   };
 
+  // 결과 데이터를 서버로 전송
+  useEffect(() => {
+    const sendResultToServer = () => {
+      const resultData = {
+        caseType: caseType,
+        assets: assets,
+        incomes: incomes,
+        loan: loan,
+        calculations: {
+          actualLoan: calculations.actualLoan,
+          actualHousePrice: calculations.actualHousePrice,
+          actualLtvRatio: calculations.actualLtvRatio,
+          limitingFactor: calculations.limitingFactor,
+          selectedLtv: selectedLtv
+        },
+        timestamp: new Date().toISOString()
+      };
+      
+      // Firebase Analytics로 결과 전송
+      logEvent(analytics, "calculation_result", {
+        case_type: caseType,
+        actual_loan: Math.floor(calculations.actualLoan),
+        actual_house_price: Math.floor(calculations.actualHousePrice),
+        limiting_factor: calculations.limitingFactor,
+        selected_ltv: selectedLtv,
+        total_assets: totalAssets,
+        total_income: totalIncome
+      });
+      
+      console.log('Result sent to server:', resultData);
+    };
+    
+    // 계산이 완료되면 서버로 전송
+    if (calculations.actualLoan > 0) {
+      sendResultToServer();
+    }
+  }, [caseType, assets, incomes, loan, calculations, selectedLtv, totalAssets, totalIncome]);
+
   const handleBack = () => {
     logEvent(analytics, "back_from_result");
     if (onEdit) onEdit('loan');
@@ -470,23 +531,7 @@ function ResultScreen({ assets, incomes, loan, onRestart, onEdit }) {
               {numberToKoreanDisplay(totalAssets)}
             </div>
             
-            {/* LTV가 최대치에 못 미칠 때만 안내 메시지 표시 */}
-            {calculations.isDsrLimited && Math.round(calculations.actualLtvRatio) < (currentLtv.ratio * 100) && (
-              <div style={{
-                marginTop: '0.8rem',
-                padding: '0.8rem',
-                backgroundColor: 'rgba(255, 165, 0, 0.1)',
-                borderRadius: '8px',
-                border: '1px solid rgba(255, 165, 0, 0.3)'
-              }}>
-                <div style={{color: '#FFA500', fontSize: '14px', marginBottom: '0.3rem'}}>
-                  소득을 늘리면 더 비싼 집을 살 수 있어요
-                </div>
-                <div style={{color: '#FFA500', fontSize: '14px'}}>
-                  자산으로 살 수 있는 최대치는 <strong>{numberToKoreanDisplay(calculations.maxHousePriceByLtv)}</strong> 입니다
-                </div>
-              </div>
-            )}
+
           </div>
 
           {/* 대출 카드 */}
@@ -540,26 +585,44 @@ function ResultScreen({ assets, incomes, loan, onRestart, onEdit }) {
                 </div>
               </div>
             )}
+            
+            {/* 250628 케이스에서 6억원 한도 초과 시 안내 */}
+            {caseType === '250628' && (selectedLtv === '50' || selectedLtv === '70') && 
+             calculations.actualLoan >= 600000000 && (
+              <div style={{
+                marginTop: '0.8rem',
+                padding: '0.8rem',
+                backgroundColor: 'rgba(255, 165, 0, 0.1)',
+                borderRadius: '8px',
+                border: '1px solid rgba(255, 165, 0, 0.3)'
+              }}>
+                <div style={{color: '#FFA500', fontSize: '14px'}}>
+                  수도권 대출 최대 6억원으로 제한됩니다
+                </div>
+              </div>
+            )}
           </div>
         </div>
         
         {/* DSR 안내문구 */}
-        <div style={{
-          marginTop: '1.5rem',
-          padding: '1rem',
-          backgroundColor: 'rgba(255, 255, 255, 0.05)',
-          borderRadius: '8px',
-          textAlign: 'center'
-        }}>
+        {caseType === '250628' && (
           <div style={{
-            fontSize: '12px',
-            color: '#A1A2B0',
-            fontWeight: 500,
-            whiteSpace: 'nowrap'
+            marginTop: '1.5rem',
+            padding: '1rem',
+            backgroundColor: 'rgba(255, 255, 255, 0.05)',
+            borderRadius: '8px',
+            textAlign: 'center'
           }}>
-            25.06.28부터 수도권 대출 최대 6억으로 제한됩니다.
+            <div style={{
+              fontSize: '12px',
+              color: '#A1A2B0',
+              fontWeight: 500,
+              whiteSpace: 'nowrap'
+            }}>
+              25.06.28부터 수도권 대출 최대 6억으로 제한됩니다.
+            </div>
           </div>
-        </div>
+        )}
       </main>
       
       <div className="fixed-bottom-container">

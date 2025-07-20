@@ -25,6 +25,7 @@ function App() {
   const [assets, setAssets] = useState({ cash: 0, stocks: 0, severance: 0, insurance: 0 });
   const [incomes, setIncomes] = useState({ salary: 0, bonus: 0, side: 0, other: 0 });
   const [loan, setLoan] = useState({ loanType: '원리금균등', finance: '40', years: 0, rate: 0, loanAmount: 0, dsr: 0, dsrCalculated: false });
+  const [caseType, setCaseType] = useState('250628'); // "기본형" | "250628"
 
   // 화면 이동 핸들러
   const goToAsset = () => setStep('asset'); // A02
@@ -39,6 +40,7 @@ function App() {
     setAssets({ cash: 0, stocks: 0, severance: 0, insurance: 0 });
     setIncomes({ salary: 0, bonus: 0, side: 0, other: 0 });
     setLoan({ loanType: '원리금균등', finance: '40', years: 0, rate: 0, loanAmount: 0, dsr: 0, dsrCalculated: false });
+    setCaseType('250628');
     setStep('home');
   };
   const goToAssetBackToHome = () => setStep('home');
@@ -216,7 +218,7 @@ function App() {
         <LoanScreen loan={loan} setLoan={setLoan} incomes={incomes} assets={assets} onBack={goToIncome} onNext={goToLoading} isEdit={step === 'loanFromResult'} onEditComplete={goToResult} />
       )}
       {step === 'A04-1' && <LoadingScreen />}
-      {step === 'result' && <ResultScreen assets={assets} incomes={incomes} loan={loan} onRestart={restart} onEdit={(target) => {
+      {step === 'result' && <ResultScreen assets={assets} incomes={incomes} loan={loan} caseType={caseType} onRestart={restart} onEdit={(target) => {
         if (target === 'asset') setStep('asset');
         else if (target === 'income') setStep('income');
         else if (target === 'loan') setStep('loanFromResult');
