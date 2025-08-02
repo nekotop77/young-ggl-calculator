@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { analytics } from "../firebase";
 import { logEvent } from "firebase/analytics";
+import { showBannerAd, removeBannerAd } from '../admob';
 
 const BackIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -415,7 +416,7 @@ function ResultScreen({ assets, incomes, loan, caseType, onRestart, onEdit }) {
     if (onRestart) onRestart();
   };
 
-  // 결과 데이터를 서버로 전송
+  // 결과 데이터를 서버로 전송 및 배너 광고 표시
   useEffect(() => {
     const sendResultToServer = () => {
       const resultData = {
@@ -447,11 +448,25 @@ function ResultScreen({ assets, incomes, loan, caseType, onRestart, onEdit }) {
       console.log('Result sent to server:', resultData);
     };
     
-    // 계산이 완료되면 서버로 전송
+    // 계산이 완료되면 서버로 전송하고 배너 광고 표시
     if (calculations.actualLoan > 0) {
       sendResultToServer();
+      // 모바일 환경에서만 광고 표시
+      if (typeof window !== 'undefined' && window.Capacitor) {
+        showBannerAd(); // 배너 광고 표시
+      }
     }
   }, [caseType, assets, incomes, loan, calculations, selectedLtv, totalAssets, totalIncome]);
+
+  // 컴포넌트 언마운트 시 배너 광고 제거
+  useEffect(() => {
+    return () => {
+      // 모바일 환경에서만 광고 제거
+      if (typeof window !== 'undefined' && window.Capacitor) {
+        removeBannerAd();
+      }
+    };
+  }, []);
 
   const handleBack = () => {
     logEvent(analytics, "back_from_result");

@@ -9,6 +9,7 @@ import SettingScreen from './components/SettingScreen';
 import SettingDetailScreen from './components/SettingDetailScreen';
 import { analytics } from "./firebase";
 import { logEvent } from "firebase/analytics";
+import { initializeAdMob } from './admob';
 
 // 조건부로 Capacitor import
 let CapApp;
@@ -26,6 +27,14 @@ function App() {
   const [incomes, setIncomes] = useState({ salary: 0, bonus: 0, side: 0, other: 0 });
   const [loan, setLoan] = useState({ loanType: '원리금균등', finance: '40', years: 0, rate: 0, loanAmount: 0, dsr: 0, dsrCalculated: false });
   const [caseType, setCaseType] = useState('250628'); // "기본형" | "250628"
+
+  // AdMob 초기화 (모바일 환경에서만)
+  useEffect(() => {
+    // 모바일 환경에서만 AdMob 초기화
+    if (typeof window !== 'undefined' && window.Capacitor) {
+      initializeAdMob();
+    }
+  }, []);
 
   // 화면 이동 핸들러
   const goToAsset = () => setStep('asset'); // A02
