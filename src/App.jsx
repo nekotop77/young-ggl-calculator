@@ -30,9 +30,26 @@ function App() {
 
   // AdMob 초기화 (모바일 환경에서만)
   useEffect(() => {
-    // 모바일 환경에서만 AdMob 초기화
-    if (typeof window !== 'undefined' && window.Capacitor) {
-      initializeAdMob();
+    const initAds = async () => {
+      // 모바일 환경에서만 AdMob 초기화
+      if (typeof window !== 'undefined' && window.Capacitor) {
+        try {
+          const success = await initializeAdMob();
+          if (!success) {
+            console.warn('AdMob 초기화 실패 - 광고 기능 비활성화');
+          }
+        } catch (error) {
+          console.error('AdMob 초기화 중 오류 발생:', error);
+          // 오류가 발생해도 앱이 계속 실행되도록 함
+        }
+      }
+    };
+    
+    // 오류가 발생해도 앱이 중단되지 않도록 try-catch로 한번 더 감싸기
+    try {
+      initAds();
+    } catch (e) {
+      console.error('AdMob 초기화 함수 호출 중 오류:', e);
     }
   }, []);
 
