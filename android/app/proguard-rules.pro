@@ -19,3 +19,24 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Capacitor 관련 규칙
+-keep class com.getcapacitor.** { *; }
+-keep class com.nekotop.younggglcalculator.** { *; }
+
+# WebView 관련 규칙
+-keepclassmembers class * {
+    @android.webkit.JavascriptInterface <methods>;
+}
+
+# 네트워크 관련 규칙
+-keep class okhttp3.** { *; }
+-keep interface okhttp3.** { *; }
+
+# Firebase 관련 규칙
+-keep class com.google.firebase.** { *; }
+-keep class com.google.android.gms.** { *; }
+
+# 디버깅을 위한 정보 보존
+-keepattributes SourceFile,LineNumberTable
+-keepattributes *Annotation*

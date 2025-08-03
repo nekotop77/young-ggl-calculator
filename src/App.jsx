@@ -7,6 +7,8 @@ import LoadingScreen from './components/LoadingScreen';
 import ResultScreen from './components/ResultScreen';
 import SettingScreen from './components/SettingScreen';
 import SettingDetailScreen from './components/SettingDetailScreen';
+import { analytics } from "./firebase";
+import { logEvent } from "firebase/analytics";
 
 function App() {
   console.log('App 컴포넌트 렌더링 시작');
@@ -72,7 +74,7 @@ function App() {
     else if (step === "setting-privacy") screenName = "SettingPrivacyPage";
     else if (step === "setting-license") screenName = "SettingLicensePage";
     if (screenName) {
-      console.log('Screen view:', screenName);
+      logEvent(analytics, "screen_view", { firebase_screen: screenName });
     }
     
     // 현재 화면 상태를 window 객체에 저장 (MainActivity에서 확인용)
