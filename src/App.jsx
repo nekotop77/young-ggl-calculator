@@ -7,51 +7,15 @@ import LoadingScreen from './components/LoadingScreen';
 import ResultScreen from './components/ResultScreen';
 import SettingScreen from './components/SettingScreen';
 import SettingDetailScreen from './components/SettingDetailScreen';
-import { analytics } from "./firebase";
-import { logEvent } from "firebase/analytics";
-import { initializeAdMob } from './admob';
-
-// 조건부로 Capacitor import
-let CapApp;
-if (typeof window !== 'undefined' && window.Capacitor) {
-  try {
-    CapApp = require('@capacitor/app').App;
-  } catch (error) {
-    console.log('Capacitor App not available in web environment');
-  }
-}
 
 function App() {
+  console.log('App 컴포넌트 렌더링 시작');
+  
   const [step, setStep] = useState('home');
   const [assets, setAssets] = useState({ cash: 0, stocks: 0, severance: 0, insurance: 0 });
   const [incomes, setIncomes] = useState({ salary: 0, bonus: 0, side: 0, other: 0 });
   const [loan, setLoan] = useState({ loanType: '원리금균등', finance: '40', years: 0, rate: 0, loanAmount: 0, dsr: 0, dsrCalculated: false });
   const [caseType, setCaseType] = useState('250628'); // "기본형" | "250628"
-
-  // AdMob 초기화 (모바일 환경에서만)
-  useEffect(() => {
-    const initAds = async () => {
-      // 모바일 환경에서만 AdMob 초기화
-      if (typeof window !== 'undefined' && window.Capacitor) {
-        try {
-          const success = await initializeAdMob();
-          if (!success) {
-            console.warn('AdMob 초기화 실패 - 광고 기능 비활성화');
-          }
-        } catch (error) {
-          console.error('AdMob 초기화 중 오류 발생:', error);
-          // 오류가 발생해도 앱이 계속 실행되도록 함
-        }
-      }
-    };
-    
-    // 오류가 발생해도 앱이 중단되지 않도록 try-catch로 한번 더 감싸기
-    try {
-      initAds();
-    } catch (e) {
-      console.error('AdMob 초기화 함수 호출 중 오류:', e);
-    }
-  }, []);
 
   // 화면 이동 핸들러
   const goToAsset = () => setStep('asset'); // A02
@@ -108,65 +72,13 @@ function App() {
     else if (step === "setting-privacy") screenName = "SettingPrivacyPage";
     else if (step === "setting-license") screenName = "SettingLicensePage";
     if (screenName) {
-      logEvent(analytics, "screen_view", { firebase_screen: screenName });
+      console.log('Screen view:', screenName);
     }
     
     // 현재 화면 상태를 window 객체에 저장 (MainActivity에서 확인용)
     if (typeof window !== 'undefined') {
       window.currentStep = step;
     }
-  }, [step]);
-
-  // Android 하드웨어 뒤로가기 버튼 이벤트 처리
-  useEffect(() => {
-    if (!CapApp) return; // 웹 환경에서는 실행하지 않음
-    
-    const handleBackButton = () => {
-      console.log('Android back button pressed, current step:', step);
-      
-      // step별 내부 뒤로가기 분기 처리
-      if (step === 'setting-privacy' || step === 'setting-license') {
-        console.log('Back to setting screen');
-        setStep('setting');
-      } else if (step === 'setting') {
-        console.log('Back to home screen');
-        setStep('home');
-      } else if (step === 'asset') {
-        console.log('Back to home screen');
-        setStep('home');
-      } else if (step === 'income') {
-        console.log('Back to asset screen');
-        setStep('asset');
-      } else if (step === 'loan' || step === 'loanFromResult') {
-        console.log('Back to income screen');
-        setStep('income');
-      } else if (step === 'A04-1') {
-        console.log('Back to loan screen');
-        setStep('loan');
-      } else if (step === 'result') {
-        console.log('Back to loan screen (edit mode)');
-        setStep('loanFromResult');
-      } else {
-        // 홈 화면에서는 앱을 백그라운드로 내리기
-        console.log('Move app to background');
-        if (CapApp && CapApp.minimizeApp) {
-          CapApp.minimizeApp();
-        } else {
-          // fallback: 앱 종료
-          CapApp.exitApp();
-        }
-      }
-    };
-
-    // Capacitor App 플러그인의 backButton 이벤트 리스너 등록
-    const removeListener = CapApp.addListener('backButton', handleBackButton);
-    
-    return () => {
-      // 컴포넌트 언마운트 시 리스너 제거
-      if (removeListener && typeof removeListener.remove === 'function') {
-        removeListener.remove();
-      }
-    };
   }, [step]);
 
   // 웹 환경에서의 뒤로가기 처리 (브라우저 뒤로가기 버튼)
@@ -233,7 +145,7 @@ function App() {
   }, [step]);
 
   return (
-    <>
+    <div className="screen-container">
       {step === 'home' && <HomeScreen onStart={goToAsset} onSetting={goToSetting} />}
       {step === 'setting' && <SettingScreen onBack={restart} onShowPrivacy={goToSettingPrivacy} onShowLicense={goToSettingLicense} />}
       {step === 'setting-privacy' && <SettingDetailScreen title="개인정보 처리방침" src="https://young-ggl-calculator.vercel.app/privacy.html" onBack={goToSetting} />}
@@ -249,7 +161,7 @@ function App() {
         else if (target === 'income') setStep('income');
         else if (target === 'loan') setStep('loanFromResult');
       }} />}
-    </>
+    </div>
   );
 }
 
