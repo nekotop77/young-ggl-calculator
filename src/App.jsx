@@ -9,6 +9,7 @@ import SettingScreen from './components/SettingScreen';
 import SettingDetailScreen from './components/SettingDetailScreen';
 import { analytics } from "./firebase";
 import { logEvent } from "firebase/analytics";
+import { initializeAdMob } from './admob';
 
 // 조건부로 Capacitor import
 let CapApp;
@@ -26,6 +27,31 @@ function App() {
   const [incomes, setIncomes] = useState({ salary: 0, bonus: 0, side: 0, other: 0 });
   const [loan, setLoan] = useState({ loanType: '원리금균등', finance: '40', years: 0, rate: 0, loanAmount: 0, dsr: 0, dsrCalculated: false });
   const [caseType, setCaseType] = useState('250628'); // "기본형" | "250628"
+
+  // AdMob 초기화 (모바일 환경에서만)
+  useEffect(() => {
+    const initAds = async () => {
+      // 모바일 환경에서만 AdMob 초기화
+      if (typeof window !== 'undefined' && window.Capacitor) {
+        try {
+          const success = await initializeAdMob();
+          if (!success) {
+            console.warn('AdMob 초기화 실패 - 광고 기능 비활성화');
+          }
+        } catch (error) {
+          console.error('AdMob 초기화 중 오류 발생:', error);
+          // 오류가 발생해도 앱이 계속 실행되도록 함
+        }
+      }
+    };
+    
+    // 오류가 발생해도 앱이 중단되지 않도록 try-catch로 한번 더 감싸기
+    try {
+      initAds();
+    } catch (e) {
+      console.error('AdMob 초기화 함수 호출 중 오류:', e);
+    }
+  }, []);
 
   // 화면 이동 핸들러
   const goToAsset = () => setStep('asset'); // A02

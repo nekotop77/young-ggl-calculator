@@ -38,9 +38,10 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="com.google.android.gms.permission.AD_ID" />
     
-    <!-- 광고 ID 사용하지 않음 선언 -->
+    <!-- AdMob 설정 -->
     <meta-data
         android:name="com.google.android.gms.ads.APPLICATION_ID"
-        android:value="ca-app-pub-0000000000000000~0000000000" />
+        android:value="ca-app-pub-3940256099942544~3347511713" />
 </manifest>
