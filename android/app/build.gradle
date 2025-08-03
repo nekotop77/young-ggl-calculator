@@ -8,7 +8,7 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 20
-        versionName "1.8.1"
+        versionName "1.8.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -32,9 +32,24 @@ android {
     buildTypes {
         release {
             signingConfig signingConfigs.release
-            minifyEnabled false
+            minifyEnabled true
             shrinkResources false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    
+    // 매핑 파일 생성 설정
+    applicationVariants.all { variant ->
+        if (variant.buildType.name == 'release') {
+            variant.assembleProvider.get().doLast {
+                copy {
+                    from variant.mappingFile
+                    into "${project.buildDir}/outputs/mapping/release/"
+                    rename { String fileName ->
+                        fileName.replace(fileName, 'mapping.txt')
+                    }
+                }
+            }
         }
     }
 }

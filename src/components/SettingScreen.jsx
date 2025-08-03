@@ -32,11 +32,11 @@ function SettingScreen({ onBack, onShowPrivacy, onShowLicense }) {
         </ul>
         <div style={{color:'#888',fontSize:'0.95rem'}}>
           <div style={{fontWeight:400,marginBottom:'0.2rem'}}>Version</div>
-                          <div style={{fontWeight:400}}>1.8.1</div>
+                          <div style={{fontWeight:400}}>1.8.0</div>
         </div>
       </main>
     </div>
   );
 }
 
-export default SettingScreen; 
+export default SettingScreen;
