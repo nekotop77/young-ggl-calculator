@@ -147,7 +147,7 @@ function App() {
   }, [step]);
 
   return (
-    <div className="screen-container">
+    <div>
       {step === 'home' && <HomeScreen onStart={goToAsset} onSetting={goToSetting} />}
       {step === 'setting' && <SettingScreen onBack={restart} onShowPrivacy={goToSettingPrivacy} onShowLicense={goToSettingLicense} />}
       {step === 'setting-privacy' && <SettingDetailScreen title="개인정보 처리방침" src="https://young-ggl-calculator.vercel.app/privacy.html" onBack={goToSetting} />}
