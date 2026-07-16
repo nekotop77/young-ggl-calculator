@@ -24,3 +24,9 @@ dist-ssr
 *.sw?
 .vercel
 commandlinetools-mac-11076708_latest.zip
+.gradle/
+
+# Unclear/possible secret material - confirm contents before ever committing
+IBkey
+upload_public_key.pem
+android/upload_certificate.pem
