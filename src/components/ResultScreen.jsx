@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { analytics } from "../firebase";
 import { logEvent } from "firebase/analytics";
+import { LTV_OPTIONS, calcMaxPurchase } from "../loanPolicy";
 
 const BackIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -116,33 +117,15 @@ const numberToKorean = (num) => {
   return sign + result;
 };
 
-// 대출규제 클래스: 수도권 대출 최대 6억 제한
-class LoanRegulation {
-  static MAX_LOAN_AMOUNT = 600000000;
-  static applyMaxLimit(amount) {
-    return Math.min(amount, LoanRegulation.MAX_LOAN_AMOUNT);
-  }
-}
-
 function ResultScreen({ assets, incomes, loan, caseType, onRestart, onEdit }) {
-  const [selectedLtv, setSelectedLtv] = useState('50'); // 기본값 LTV 50%
+  const [selectedLtv, setSelectedLtv] = useState('40'); // 기본값 규제지역 LTV 40%
 
   // 합계 계산
   const totalAssets = Object.values(assets).reduce((sum, val) => sum + Number(val), 0);
   const totalIncome = Object.values(incomes).reduce((sum, val) => sum + Number(val), 0);
   const totalLoan = loan.loanAmount || 0;
   
-  // LTV 옵션 - caseType에 따라 다르게 설정
-  const ltvOptions = caseType === '250628' ? [
-    { value: '50', label: 'LTV 50%', ratio: 0.5, description: '규제지역 LTV 50%' },
-    { value: '70', label: 'LTV 70%', ratio: 0.7, description: '비규제지역(수도권) LTV 70%' },
-    { value: '70_local', label: 'LTV 70%', ratio: 0.7, description: '비규제지역(지방) LTV 70%' }
-  ] : [
-    { value: '50', label: 'LTV 50%', ratio: 0.5, description: '규제지역 LTV 50%' },
-    { value: '70', label: 'LTV 70%', ratio: 0.7, description: '비규제지역 LTV 70%' }
-  ];
-
-  const currentLtv = ltvOptions.find(opt => opt.value === selectedLtv);
+  const currentLtv = LTV_OPTIONS.find(opt => opt.value === selectedLtv);
   
   // 현재 선택된 LTV에 따른 계산
   const calculations = useMemo(() => {
@@ -238,44 +221,13 @@ function ResultScreen({ assets, incomes, loan, caseType, onRestart, onEdit }) {
       }
     })();
     
-    // LTV 기준으로 계산된 최대 집값과 대출 가능 금액
-    // 집값 = 자산 / (1 - LTV) (자산이 자기자본이라고 가정)
-    const maxHousePriceByLtv = totalAssets / (1 - ltvRatio);
-    const maxLoanByLtv = totalAssets * (ltvRatio / (1 - ltvRatio));
-    
-    // DSR vs LTV 중 더 제한적인 조건 적용
-    let actualLoan, actualHousePrice, limitingFactor;
-    
-    // 250628 케이스에서 수도권 규제지역/비규제지역은 6억원 한도 적용
-    if (caseType === '250628' && (selectedLtv === '50' || selectedLtv === '70')) {
-      const maxLoanWithLimit = Math.min(dsrBasedMaxLoan, 600000000); // 6억원 한도
-      const maxLoanByLtvWithLimit = Math.min(maxLoanByLtv, 600000000); // 6억원 한도
-      
-      if (maxLoanWithLimit <= maxLoanByLtvWithLimit) {
-        // DSR이 제한 요소인 경우
-        actualLoan = maxLoanWithLimit;
-        actualHousePrice = totalAssets + actualLoan;
-        limitingFactor = 'DSR';
-      } else {
-        // LTV가 제한 요소인 경우
-        actualLoan = maxLoanByLtvWithLimit;
-        actualHousePrice = totalAssets + actualLoan;
-        limitingFactor = 'LTV';
-      }
-    } else {
-      // 기본형 또는 지방 비규제지역 (6억원 한도 없음)
-      if (dsrBasedMaxLoan <= maxLoanByLtv) {
-        // DSR이 제한 요소인 경우
-        actualLoan = dsrBasedMaxLoan;
-        actualHousePrice = totalAssets + actualLoan;
-        limitingFactor = 'DSR';
-      } else {
-        // LTV가 제한 요소인 경우
-        actualLoan = maxLoanByLtv;
-        actualHousePrice = maxHousePriceByLtv;
-        limitingFactor = 'LTV';
-      }
-    }
+    // DSR, LTV, 시가별 대출 한도 중 가장 제한적인 조건 적용
+    const { loan: actualLoan, housePrice: actualHousePrice, limitingFactor, cap: loanCap, maxPrice: tierMaxPrice } = calcMaxPurchase({
+      assets: totalAssets,
+      dsrMaxLoan: dsrBasedMaxLoan,
+      ltvRatio,
+      tiers: currentLtv.tiers
+    });
     
     // 실제 LTV 비율 계산
     const actualLtvRatio = actualHousePrice > 0 ? (actualLoan / actualHousePrice) * 100 : 0;
@@ -286,8 +238,8 @@ function ResultScreen({ assets, incomes, loan, caseType, onRestart, onEdit }) {
     
     return {
       dsrBasedMaxLoan,
-      maxHousePriceByLtv,
-      maxLoanByLtv,
+      loanCap,
+      tierMaxPrice,
       actualLoan,
       actualHousePrice,
       actualLtvRatio,
@@ -401,12 +353,6 @@ function ResultScreen({ assets, incomes, loan, caseType, onRestart, onEdit }) {
   const dsr = loan.dsr || 0;
   const monthlyPayment = loan.monthlyPayment || 0;
 
-  // 대출금액 규제 적용
-  const regulatedLoanAmount = LoanRegulation.applyMaxLimit(loan.loanAmount || 0);
-
-  // DSR % 계산 (총대출액의 DSR 비율, 40% 초과 시 40%로 제한)
-  const dsrPercent = totalIncome > 0 ? Math.min(Math.round((regulatedLoanAmount / totalIncome) * 1000 / loan.years) / 10, 40) : 0;
-
   // 금융기관별 DSR 한도 (뱃지 표기용)
   const dsrLimit = loan.finance === '50' ? 50 : 40;
 
@@ -494,7 +440,7 @@ function ResultScreen({ assets, incomes, loan, caseType, onRestart, onEdit }) {
               textAlign: 'left'
             }}
           >
-            {ltvOptions.map(opt => (
+            {LTV_OPTIONS.map(opt => (
               <option key={opt.value} value={opt.value}>{opt.description}</option>
             ))}
           </select>
@@ -586,9 +532,8 @@ function ResultScreen({ assets, incomes, loan, caseType, onRestart, onEdit }) {
               </div>
             )}
             
-            {/* 250628 케이스에서 6억원 한도 초과 시 안내 */}
-            {caseType === '250628' && (selectedLtv === '50' || selectedLtv === '70') && 
-             calculations.actualLoan >= 600000000 && (
+            {/* 시가별 대출 한도 안내 */}
+            {(calculations.limitingFactor === 'CAP' || calculations.limitingFactor === 'PRICE') && (
               <div style={{
                 marginTop: '0.8rem',
                 padding: '0.8rem',
@@ -597,7 +542,9 @@ function ResultScreen({ assets, incomes, loan, caseType, onRestart, onEdit }) {
                 border: '1px solid rgba(255, 165, 0, 0.3)'
               }}>
                 <div style={{color: '#FFA500', fontSize: '14px'}}>
-                  DSR이 남았지만 수도권 대출 <strong>최대 6억</strong>으로 제한됩니다
+                  {calculations.limitingFactor === 'CAP'
+                    ? <>DSR이 남았지만 이 가격대 주택은 대출 <strong>최대 {numberToKoreanDisplay(calculations.loanCap)}</strong>으로 제한됩니다</>
+                    : <>시가 <strong>{numberToKoreanDisplay(calculations.tierMaxPrice)}</strong>을 넘으면 대출 한도가 줄어 이 가격이 최대입니다</>}
                 </div>
               </div>
             )}
@@ -605,7 +552,7 @@ function ResultScreen({ assets, incomes, loan, caseType, onRestart, onEdit }) {
         </div>
         
         {/* DSR 안내문구 */}
-        {caseType === '250628' && (
+        {selectedLtv !== '70_local' && (
           <div style={{
             marginTop: '1.5rem',
             padding: '1rem',
@@ -617,9 +564,9 @@ function ResultScreen({ assets, incomes, loan, caseType, onRestart, onEdit }) {
               fontSize: '12px',
               color: '#A1A2B0',
               fontWeight: 500,
-              whiteSpace: 'nowrap'
+              wordBreak: 'keep-all'
             }}>
-              25.06.28부터 수도권 대출 최대 6억으로 제한됩니다.
+              25.10.16부터 수도권·규제지역 주담대는 시가 15억 이하 6억, 15억 초과~25억 이하 4억, 25억 초과 2억으로 제한됩니다.
             </div>
           </div>
         )}
