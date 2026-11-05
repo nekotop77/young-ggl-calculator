@@ -570,6 +570,17 @@ function ResultScreen({ assets, incomes, loan, caseType, onRestart, onEdit }) {
             </div>
           </div>
         )}
+
+        {/* 참고용 안내 */}
+        <div style={{
+          marginTop: '0.75rem',
+          fontSize: '12px',
+          color: '#A1A2B0',
+          textAlign: 'center',
+          wordBreak: 'keep-all'
+        }}>
+          이 결과는 입력값을 기준으로 한 참고용 계산이며, 이 앱은 대출을 제공하거나 중개하지 않습니다. 실제 대출 가능 여부와 한도는 금융기관 심사에 따라 달라집니다.
+        </div>
       </main>
       
       <div className="fixed-bottom-container">
