@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
+import NumericField from './NumericField';
 
 const BackIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -220,20 +221,16 @@ function AssetScreen({ assets, setAssets, onNext, onBack, isEdit, onEditComplete
               <div className="label">{label}</div>
               <div className="input-wrapper asset-input">
                 <div className="input-auto-shrink">
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    autoComplete="off"
-                    autoCorrect="off"
-                    spellCheck={false}
+                  <NumericField
                     placeholder={placeholder}
                     value={getDisplayValue(assets[id])}
-                    onChange={(e) => handleAssetChange(id, e.target.value)}
+                    onChange={(text) => handleAssetChange(id, text)}
                     ref={id === 'cash' ? cashInputRef : null}
                     onKeyDown={(e) => handleKeyPress(e, id === 'insurance')}
                     onFocus={e => {
+                      const el = e.currentTarget;
                       setTimeout(() => {
-                        e.target.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                        el.scrollIntoView({ block: 'center', behavior: 'smooth' });
                       }, 150);
                     }}
                   />

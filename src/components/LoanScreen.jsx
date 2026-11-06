@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
+import NumericField from './NumericField';
 
 const BackIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -103,6 +104,16 @@ function LoanScreen({ loan, setLoan, incomes, assets, onBack, onNext, isEdit, on
     let numericValue = cleanValue === '' ? 0 : Number(cleanValue);
     if (id !== 'rate' && numericValue >= 100000000000) numericValue = 99999999999;
     setLoan(prev => ({ ...prev, [id]: numericValue }));
+  };
+
+  // 금리는 "3." 처럼 입력 중인 소수점을 지키려고 문자열로 따로 들고 있는다
+  const [rateText, setRateText] = useState(isEdit && loan.rate ? String(loan.rate) : '');
+  const handleRateText = (text) => {
+    let t = text.replace(/,/g, '.').replace(/[^0-9.]/g, '');
+    const dot = t.indexOf('.');
+    if (dot !== -1) t = t.slice(0, dot + 1) + t.slice(dot + 1).replace(/\./g, '');
+    setRateText(t);
+    handleLoanChange('rate', t);
   };
 
   const formatNumber = (num) => {
@@ -534,22 +545,18 @@ function LoanScreen({ loan, setLoan, incomes, assets, onBack, onNext, isEdit, on
             <div className="label">대출기간(년)</div>
             <div className="input-wrapper loan-period">
               <div className="input-auto-shrink">
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  autoComplete="off"
-                  autoCorrect="off"
-                  spellCheck={false}
+                <NumericField
                   placeholder="대출기간 입력하세요"
-                  value={loan.years === 0 ? '' : loan.years}
-                  onChange={e => handleLoanChange('years', e.target.value)}
+                  value={loan.years === 0 ? '' : String(loan.years)}
+                  onChange={text => handleLoanChange('years', text.replace(/[^0-9]/g, ''))}
                   ref={yearsInputRef}
                   onKeyDown={(e) => handleKeyPress(e, rateInputRef)}
                   onFocus={e => {
-                    setTimeout(() => {
-                      e.target.scrollIntoView({ block: 'center', behavior: 'smooth' });
-                    }, 150);
-                  }}
+                      const el = e.currentTarget;
+                      setTimeout(() => {
+                        el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                      }, 150);
+                    }}
                 />
               </div>
             </div>
@@ -559,25 +566,19 @@ function LoanScreen({ loan, setLoan, incomes, assets, onBack, onNext, isEdit, on
             <div className="label">금리(%)</div>
             <div className="input-wrapper loan-rate">
               <div className="input-auto-shrink">
-                <input
-                  type="number"
-                  step="0.01"
+                <NumericField
                   inputMode="decimal"
-                  autoComplete="off"
-                  autoCorrect="off"
-                  spellCheck={false}
-                  pattern="[0-9]*[.,]?[0-9]*"
                   placeholder="금리를 입력하세요"
-                  value={loan.rate === 0 ? '' : loan.rate}
-                  onFocus={e => {
-                    if (e.target.value === '0') e.target.value = '';
-                    setTimeout(() => {
-                      e.target.scrollIntoView({ block: 'center', behavior: 'smooth' });
-                    }, 150);
-                  }}
-                  onChange={e => handleLoanChange('rate', e.target.value)}
+                  value={rateText}
+                  onChange={handleRateText}
                   ref={rateInputRef}
                   onKeyDown={(e) => handleKeyPress(e, dsrButtonRef)}
+                  onFocus={e => {
+                      const el = e.currentTarget;
+                      setTimeout(() => {
+                        el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                      }, 150);
+                    }}
                 />
               </div>
             </div>

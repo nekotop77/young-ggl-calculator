@@ -188,7 +188,7 @@ function App() {
     // 추가로 keydown 이벤트도 처리 (Android 하드웨어 키)
     const handleKeyDown = (e) => {
       // 입력 필드에서 백스페이스 키는 뒤로가기로 처리하지 않음
-      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) {
         return;
       }
       

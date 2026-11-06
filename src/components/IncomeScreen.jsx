@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useMemo, useState } from 'react';
+import NumericField from './NumericField';
 
 const BackIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -209,20 +210,16 @@ function IncomeScreen({ incomes, setIncomes, onNext, onBack, isEdit, onEditCompl
               <div className="label">{label}</div>
               <div className="input-wrapper income-input">
                 <div className="input-auto-shrink">
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    autoComplete="off"
-                    autoCorrect="off"
-                    spellCheck={false}
+                  <NumericField
                     placeholder={placeholder}
                     value={getDisplayValue(incomes[id])}
-                    onChange={(e) => handleIncomeChange(id, e.target.value)}
+                    onChange={(text) => handleIncomeChange(id, text)}
                     ref={id === 'salary' ? salaryInputRef : null}
                     onKeyDown={(e) => handleKeyPress(e, id === 'other')}
                     onFocus={e => {
+                      const el = e.currentTarget;
                       setTimeout(() => {
-                        e.target.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                        el.scrollIntoView({ block: 'center', behavior: 'smooth' });
                       }, 150);
                     }}
                   />
