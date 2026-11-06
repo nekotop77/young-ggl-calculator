@@ -212,6 +212,9 @@ function IncomeScreen({ incomes, setIncomes, onNext, onBack, isEdit, onEditCompl
                   <input
                     type="text"
                     inputMode="numeric"
+                    autoComplete="off"
+                    autoCorrect="off"
+                    spellCheck={false}
                     placeholder={placeholder}
                     value={getDisplayValue(incomes[id])}
                     onChange={(e) => handleIncomeChange(id, e.target.value)}

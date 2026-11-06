@@ -537,6 +537,9 @@ function LoanScreen({ loan, setLoan, incomes, assets, onBack, onNext, isEdit, on
                 <input
                   type="text"
                   inputMode="numeric"
+                  autoComplete="off"
+                  autoCorrect="off"
+                  spellCheck={false}
                   placeholder="대출기간 입력하세요"
                   value={loan.years === 0 ? '' : loan.years}
                   onChange={e => handleLoanChange('years', e.target.value)}
@@ -560,6 +563,9 @@ function LoanScreen({ loan, setLoan, incomes, assets, onBack, onNext, isEdit, on
                   type="number"
                   step="0.01"
                   inputMode="decimal"
+                  autoComplete="off"
+                  autoCorrect="off"
+                  spellCheck={false}
                   pattern="[0-9]*[.,]?[0-9]*"
                   placeholder="금리를 입력하세요"
                   value={loan.rate === 0 ? '' : loan.rate}

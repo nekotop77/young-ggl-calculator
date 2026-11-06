@@ -223,6 +223,9 @@ function AssetScreen({ assets, setAssets, onNext, onBack, isEdit, onEditComplete
                   <input
                     type="text"
                     inputMode="numeric"
+                    autoComplete="off"
+                    autoCorrect="off"
+                    spellCheck={false}
                     placeholder={placeholder}
                     value={getDisplayValue(assets[id])}
                     onChange={(e) => handleAssetChange(id, e.target.value)}
