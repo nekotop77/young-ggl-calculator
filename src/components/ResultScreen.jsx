@@ -1,128 +1,18 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { analytics } from "../firebase";
 import { logEvent } from "firebase/analytics";
 import { LTV_OPTIONS, calcMaxPurchase } from "../loanPolicy";
+import { Screen, Amount, Badge, Select } from './ui';
+import { formatWon, floorToManWon, sumValues } from '../format';
 
-const BackIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M15 19L8 12L15 5" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
-);
-
-const DropdownIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M6 9L12 15L18 9" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
-);
-
-
-
-const formatNumber = (num) => {
-  if (!num) return '0';
-  return num.toLocaleString('ko-KR');
-};
-
-// 한글 단위 표시 (만원 단위) - A02/A03과 동일한 형식
-const numberToKoreanDisplay = (num) => {
-  if (typeof num !== 'number' || isNaN(num) || num === 0) return '0원';
-  const manWon = Math.floor(num / 10000);
-  
-  // 조 단위 (1조 = 1,000,000만원)
-  if (manWon >= 100000000) {
-    const jo = Math.floor(manWon / 100000000);
-    const remainEok = Math.floor((manWon % 100000000) / 10000);
-    const remainMan = manWon % 10000;
-    let result = `${jo.toLocaleString('ko-KR')}조`;
-    if (remainEok > 0) {
-      result += `${remainEok.toLocaleString('ko-KR')}억`;
-    }
-    if (remainMan > 0) {
-      result += `${remainMan.toLocaleString('ko-KR')}만`;
-    }
-    return result + '원';
-  }
-  // 억 단위
-  else if (manWon >= 10000) {
-    const eok = Math.floor(manWon / 10000);
-    const remainMan = manWon % 10000;
-    if (remainMan === 0) {
-      return `${eok.toLocaleString('ko-KR')}억원`;
-    } else {
-      return `${eok.toLocaleString('ko-KR')}억${remainMan.toLocaleString('ko-KR')}만원`;
-    }
-  } else {
-    return `${manWon.toLocaleString('ko-KR')}만원`;
-  }
-};
-
-const numberToKorean = (num) => {
-  if (typeof num !== 'number' || isNaN(num) || num === 0) return '0원';
-  const absNum = Math.abs(num);
-  const sign = num < 0 ? '-' : '';
-  let result = '';
-  let remain = absNum;
-  let lastUnit = '';
-  
-  // 조 단위 (1조 = 1,000,000만원)
-  if (remain >= 1e12) {
-    const jo = Math.floor(remain / 1e12);
-    result += `${jo.toLocaleString('ko-KR')}조`;
-    remain = remain % 1e12;
-    lastUnit = '조';
-  }
-  // 억 단위
-  if (remain >= 1e8) {
-    const eok = Math.floor(remain / 1e8);
-    result += `${eok.toLocaleString('ko-KR')}억`;
-    remain = remain % 1e8;
-    lastUnit = '억';
-  }
-  // 천만 단위 (만 단위가 100 이상)
-  if (remain >= 1e7) {
-    const chun = Math.floor(remain / 1e7);
-    result += `${chun.toLocaleString('ko-KR')}천`;
-    remain = remain % 1e7;
-    lastUnit = '천';
-  }
-  // 만 단위
-  if (remain >= 1e4) {
-    const man = Math.floor(remain / 1e4);
-    result += `${man.toLocaleString('ko-KR')}만`;
-    remain = remain % 1e4;
-    lastUnit = '만';
-  }
-  // 천 단위는 만 단위가 없을 때만 붙임
-  if (remain >= 1e3 && result.indexOf('만') === -1) {
-    const chun = Math.floor(remain / 1e3);
-    result += `${chun.toLocaleString('ko-KR')}천`;
-    remain = remain % 1e3;
-    lastUnit = '천';
-  }
-  if (remain > 0) {
-    result += `${remain.toLocaleString('ko-KR')}`;
-    lastUnit = '';
-  }
-  // 단위 붙이기
-  if (lastUnit === '천') {
-    result += '만원';
-  } else if (lastUnit === '만') {
-    result += '원';
-  } else if (lastUnit === '억') {
-    result += '원';
-  } else if (lastUnit === '조') {
-    result += '원';
-  } else if (result) {
-    result += '원';
-  }
-  return sign + result;
-};
+const LTV_SELECT_OPTIONS = LTV_OPTIONS.map(({ value, description }) => ({ value, label: description }));
 
 function ResultScreen({ assets, incomes, loan, caseType, onRestart, onEdit }) {
   const [selectedLtv, setSelectedLtv] = useState('40'); // 기본값 규제지역 LTV 40%
 
   // 합계 계산
-  const totalAssets = Object.values(assets).reduce((sum, val) => sum + Number(val), 0);
-  const totalIncome = Object.values(incomes).reduce((sum, val) => sum + Number(val), 0);
+  const totalAssets = sumValues(assets);
+  const totalIncome = sumValues(incomes);
   const totalLoan = loan.loanAmount || 0;
   
   const currentLtv = LTV_OPTIONS.find(opt => opt.value === selectedLtv);
@@ -350,9 +240,6 @@ function ResultScreen({ assets, incomes, loan, caseType, onRestart, onEdit }) {
     }
   }, [loan, calculations.actualLoan]);
   
-  const dsr = loan.dsr || 0;
-  const monthlyPayment = loan.monthlyPayment || 0;
-
   // 금융기관별 DSR 한도 (뱃지 표기용)
   const dsrLimit = loan.finance === '50' ? 50 : 40;
 
@@ -404,194 +291,61 @@ function ResultScreen({ assets, incomes, loan, caseType, onRestart, onEdit }) {
     if (onEdit) onEdit('loan');
   };
 
+  const { isLtvLimited, limitingFactor } = calculations;
+  const paymentLabel = loan.loanType === '원금균등' ? '첫달' : '월 납입';
+
   return (
-    <div className="screen-container">
-      <header className="screen-header">
-        <button className="back-button" onClick={handleBack} style={{marginLeft: '-8px'}}><BackIcon /></button>
-        <h1 className="screen-title">영끌 내집 계산 완료</h1>
-      </header>
-      <main>
-        {/* 드롭다운 */}
-        <div style={{ 
-          textAlign: 'left',
-          marginBottom: '1.5rem',
-          marginTop: '10px'
-        }}>
-          <div style={{ 
-            position: 'relative', 
-            display: 'inline-block',
-            minWidth: 'auto'
-          }}>
-          <select
-            value={selectedLtv}
-            onChange={(e) => setSelectedLtv(e.target.value)}
-            style={{ 
-              width: 'auto',
-              minWidth: '200px',
-              padding: '0.5rem 2rem 0.5rem 1rem', 
-              borderRadius: '20px', 
-              fontSize: '0.9rem',
-              fontWeight: '600',
-              background: '#23243a', 
-              color: '#fff', 
-              border: 'none', 
-              appearance: 'none',
-              paddingRight: '2rem',
-              textAlign: 'left'
-            }}
-          >
-            {LTV_OPTIONS.map(opt => (
-              <option key={opt.value} value={opt.value}>{opt.description}</option>
-            ))}
-          </select>
-          <div style={{
-            position: 'absolute',
-            right: '0.75rem',
-            top: '50%',
-            transform: 'translateY(-50%)',
-            pointerEvents: 'none'
-          }}>
-            <DropdownIcon />
-          </div>
-          </div>
+    <Screen
+      title="결과"
+      onBack={handleBack}
+      footer={<button className="button button-primary" onClick={handleRestart}>다시 하기</button>}
+    >
+      <Select pill value={selectedLtv} onChange={setSelectedLtv} options={LTV_SELECT_OPTIONS} />
+
+      <Amount value={formatWon(calculations.actualHousePrice)} accent />
+
+      <dl className="rows">
+        <div className="row">
+          <dt>자산</dt>
+          <dd className="row-value">{formatWon(totalAssets)}</dd>
         </div>
-
-        {/* 집 가격 표시 */}
-        <div style={{textAlign:'left', marginBottom:'2rem'}}>
-          <div style={{
-            fontSize:'2.2rem', 
-            color:'#62BBFF', 
-            fontWeight:700, 
-            letterSpacing:'-1px',
-            marginBottom: '0.5rem'
-          }}>
-            {numberToKoreanDisplay(calculations.actualHousePrice)}
-          </div>
-        </div>
-
-        <div className="form-group">
-          {/* 자산 카드 */}
-          <div className="input-card">
-            <div className="label">자산</div>
-            <div style={{fontWeight:700,fontSize:'1.1rem',color:'#fff'}}>
-              {numberToKoreanDisplay(totalAssets)}
-            </div>
-            
-
-          </div>
-
-          {/* 대출 카드 */}
-          <div className="input-card">
-            {/* 1. 타이틀+DSR뱃지 */}
-            <div style={{display:'flex',alignItems:'center',gap:'8px',marginBottom:'0.5rem'}}>
-              <span className="input-card-title" style={{fontWeight:700,fontSize:'1.1rem',color:'#fff'}}>대출</span>
-              <span style={{
-                background: 'rgb(51, 66, 96)',
-                color: 'rgb(126, 207, 255)',
-                fontWeight: 500,
-                fontSize: '0.95rem',
-                borderRadius: '12px',
-                padding: '3px 10px',
-                display: 'inline-block',
-              }}>
-                DSR {Math.min(Math.round(actualDsr * 10) / 10, dsrLimit)}%
-              </span>
-            </div>
-            {/* 2. 소득/상환방식/기간/금리 */}
-            <div style={{fontSize:'1rem',color:'#fff',marginBottom:'0.7rem',fontWeight:400}}>
-              소득 {numberToKoreanDisplay(totalIncome)} / {loan.loanType} / {loan.years}년 / {loan.rate}%
-            </div>
-            {/* 3. 대출금액+월납입 */}
-            <div style={{display:'flex',alignItems:'baseline',gap:'10px',marginBottom:'0.3rem'}}>
-              <div style={{fontSize:'1.1rem',fontWeight:700,color:'#fff',letterSpacing:'-1px'}}>
-                {numberToKoreanDisplay(Math.floor(calculations.actualLoan))}
-              </div>
-              {(calculations.actualLoan > 0 && actualMonthlyPayment > 0) && (
-                <div style={{fontSize:'1.1rem',color:'#A1A2B0',fontWeight:500,whiteSpace:'nowrap',marginLeft:'2px'}}>
-                  {loan.loanType === '원금균등'
-                    ? `첫달 ${numberToKoreanDisplay(Math.trunc(actualMonthlyPayment / 10000) * 10000)}`
-                    : `월 납입 ${numberToKoreanDisplay(Math.trunc(actualMonthlyPayment / 10000) * 10000)}`}
-                </div>
-              )}
-            </div>
-            {/* 4. 하단 안내문구(기존 스타일 유지) */}
-            {calculations.isLtvLimited && (
-              <div style={{
-                marginTop: '0.8rem',
-                padding: '0.8rem',
-                backgroundColor: 'rgba(255, 165, 0, 0.1)',
-                borderRadius: '8px',
-                border: '1px solid rgba(255, 165, 0, 0.3)'
-              }}>
-                <div style={{color: '#FFA500', fontSize: '14px', marginBottom: '0.3rem'}}>
-                  자산을 늘리면 DSR을 더 쓸 수 있어요
-                </div>
-                <div style={{color: '#FFA500', fontSize: '14px'}}>
-                  소득 대비 대출 최대치는 <strong>{numberToKoreanDisplay(loan.loanAmount)}</strong>입니다
-                </div>
-              </div>
+        <div className="row">
+          <dt>대출 <Badge>DSR {Math.min(Math.round(actualDsr * 10) / 10, dsrLimit)}%</Badge></dt>
+          <dd>
+            <div className="row-value">{formatWon(Math.floor(calculations.actualLoan))}</div>
+            {calculations.actualLoan > 0 && actualMonthlyPayment > 0 && (
+              <div className="row-aside">{paymentLabel} {formatWon(floorToManWon(actualMonthlyPayment))}</div>
             )}
-            
-            {/* 시가별 대출 한도 안내 */}
-            {(calculations.limitingFactor === 'CAP' || calculations.limitingFactor === 'PRICE') && (
-              <div style={{
-                marginTop: '0.8rem',
-                padding: '0.8rem',
-                backgroundColor: 'rgba(255, 165, 0, 0.1)',
-                borderRadius: '8px',
-                border: '1px solid rgba(255, 165, 0, 0.3)'
-              }}>
-                <div style={{color: '#FFA500', fontSize: '14px'}}>
-                  {calculations.limitingFactor === 'CAP'
-                    ? <>DSR이 남았지만 이 가격대 주택은 대출 <strong>최대 {numberToKoreanDisplay(calculations.loanCap)}</strong>으로 제한됩니다</>
-                    : <>시가 <strong>{numberToKoreanDisplay(calculations.tierMaxPrice)}</strong>을 넘으면 대출 한도가 줄어 이 가격이 최대입니다</>}
-                </div>
-              </div>
-            )}
-          </div>
+          </dd>
+          <dd className="row-meta">
+            소득 {formatWon(totalIncome)} / {loan.loanType} / {loan.years}년 / {loan.rate}%
+          </dd>
         </div>
-        
-        {/* DSR 안내문구 */}
+      </dl>
+
+      {isLtvLimited && (
+        <div className="notice">
+          <p>자산을 늘리면 DSR을 더 쓸 수 있어요</p>
+          <p>소득 대비 대출 최대치는 <strong>{formatWon(loan.loanAmount)}</strong>입니다</p>
+        </div>
+      )}
+      {(limitingFactor === 'CAP' || limitingFactor === 'PRICE') && (
+        <div className="notice">
+          <p>
+            {limitingFactor === 'CAP'
+              ? <>DSR이 남았지만 이 가격대 주택은 대출 <strong>최대 {formatWon(calculations.loanCap)}</strong>으로 제한됩니다</>
+              : <>시가 <strong>{formatWon(calculations.tierMaxPrice)}</strong>을 넘으면 대출 한도가 줄어 이 가격이 최대입니다</>}
+          </p>
+        </div>
+      )}
+
+      <div className="fine-print">
         {selectedLtv !== '70_local' && (
-          <div style={{
-            marginTop: '1.5rem',
-            padding: '1rem',
-            backgroundColor: 'rgba(255, 255, 255, 0.05)',
-            borderRadius: '8px',
-            textAlign: 'center'
-          }}>
-            <div style={{
-              fontSize: '12px',
-              color: '#A1A2B0',
-              fontWeight: 500,
-              wordBreak: 'keep-all'
-            }}>
-              25.10.16부터 수도권·규제지역 주담대는 시가 15억 이하 6억, 15억 초과~25억 이하 4억, 25억 초과 2억으로 제한됩니다.
-            </div>
-          </div>
+          <p>25.10.16부터 수도권·규제지역 주담대는 시가 15억 이하 6억, 15억 초과~25억 이하 4억, 25억 초과 2억으로 제한됩니다.</p>
         )}
-
-        {/* 참고용 안내 */}
-        <div style={{
-          marginTop: '0.75rem',
-          fontSize: '12px',
-          color: '#A1A2B0',
-          textAlign: 'center',
-          wordBreak: 'keep-all'
-        }}>
-          이 결과는 입력값을 기준으로 한 참고용 계산이며, 이 앱은 대출을 제공하거나 중개하지 않습니다. 실제 대출 가능 여부와 한도는 금융기관 심사에 따라 달라집니다.
-        </div>
-      </main>
-      
-      <div className="fixed-bottom-container">
-        <button
-          className="bottom-button"
-          onClick={handleRestart}
-        >
-          처음부터 다시하기
-        </button>
+        <p>이 결과는 입력값을 기준으로 한 참고용 계산이며, 이 앱은 대출을 제공하거나 중개하지 않습니다. 실제 대출 가능 여부와 한도는 금융기관 심사에 따라 달라집니다.</p>
       </div>
-    </div>
+    </Screen>
   );
 }
 
