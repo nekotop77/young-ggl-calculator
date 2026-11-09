@@ -76,13 +76,6 @@ const NumericField = forwardRef(function NumericField(
     onKeyDown?.(e);
   };
 
-  // 키보드가 올라온 뒤 입력칸이 가려지지 않도록 화면 가운데로 끌어온다
-  const handleFocus = (e) => {
-    const el = e.currentTarget;
-    setTimeout(() => el.scrollIntoView({ block: 'center', behavior: 'smooth' }), 150);
-    onFocus?.(e);
-  };
-
   return (
     <div
       ref={setRefs}
@@ -99,7 +92,7 @@ const NumericField = forwardRef(function NumericField(
       data-placeholder={placeholder}
       onInput={handleInput}
       onKeyDown={handleKeyDown}
-      onFocus={handleFocus}
+      onFocus={onFocus}
     />
   );
 });

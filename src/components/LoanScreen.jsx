@@ -1,7 +1,11 @@
-import { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import NumericField from './NumericField';
-import { Screen, Amount, Field, Select, Badge, useKeyboardOpen } from './ui';
-import { formatWon, floorToManWon } from '../format';
+
+const BackIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M15 19L8 12L15 5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
 
 const financeOptions = [
   { value: '40', label: '제1금융기관 40%' },
@@ -21,7 +25,7 @@ function LoanScreen({ loan, setLoan, incomes, assets, onBack, onNext, isEdit, on
   const [dsrCalculated, setDsrCalculated] = useState(false);
   const [monthlyPayment, setMonthlyPayment] = useState(0);
   const [dsr, setDsr] = useState(0);
-  const [keyboardOpen, setKeyboardOpen] = useKeyboardOpen();
+  const [keyboardOpen, setKeyboardOpen] = useState(false);
   const [stressDsr, setStressDsr] = useState(null);
   const [stressLimit, setStressLimit] = useState(null);
   const [stressMonthly, setStressMonthly] = useState(null);
@@ -52,6 +56,17 @@ function LoanScreen({ loan, setLoan, incomes, assets, onBack, onNext, isEdit, on
     if (!loan.loanType) {
       setLoan(prev => ({ ...prev, loanType: '원리금균등' }));
     }
+  }, []);
+
+  useEffect(() => {
+    const handleFocusIn = () => setKeyboardOpen(true);
+    const handleFocusOut = () => setKeyboardOpen(false);
+    window.addEventListener('focusin', handleFocusIn);
+    window.addEventListener('focusout', handleFocusOut);
+    return () => {
+      window.removeEventListener('focusin', handleFocusIn);
+      window.removeEventListener('focusout', handleFocusOut);
+    };
   }, []);
 
   const handleLoanChange = (id, value) => {
@@ -99,6 +114,106 @@ function LoanScreen({ loan, setLoan, incomes, assets, onBack, onNext, isEdit, on
     if (dot !== -1) t = t.slice(0, dot + 1) + t.slice(dot + 1).replace(/\./g, '');
     setRateText(t);
     handleLoanChange('rate', t);
+  };
+
+  const formatNumber = (num) => {
+    if (!num) return '';
+    return num.toLocaleString('ko-KR');
+  };
+
+  const numberToKorean = (num) => {
+    if (typeof num !== 'number' || isNaN(num) || num === 0) return null;
+    const absNum = Math.abs(num);
+    const sign = num < 0 ? '-' : '';
+    let result = '';
+    let remain = absNum;
+    let lastUnit = '';
+    
+    // 조 단위 (1조 = 1,000,000만원)
+    if (remain >= 1e12) {
+      const jo = Math.floor(remain / 1e12);
+      result += `${jo}조`;
+      remain = remain % 1e12;
+      lastUnit = '조';
+    }
+    // 억 단위
+    if (remain >= 1e8) {
+      const eok = Math.floor(remain / 1e8);
+      result += `${eok}억`;
+      remain = remain % 1e8;
+      lastUnit = '억';
+    }
+    // 천만 단위 (만 단위가 100 이상)
+    if (remain >= 1e7) {
+      const chun = Math.floor(remain / 1e7);
+      result += `${chun}천`;
+      remain = remain % 1e7;
+      lastUnit = '천';
+    }
+    // 만 단위
+    if (remain >= 1e4) {
+      const man = Math.floor(remain / 1e4);
+      result += `${man}만`;
+      remain = remain % 1e4;
+      lastUnit = '만';
+    }
+    // 천 단위는 만 단위가 없을 때만 붙임
+    if (remain >= 1e3 && result.indexOf('만') === -1) {
+      const chun = Math.floor(remain / 1e3);
+      result += `${chun}천`;
+      remain = remain % 1e3;
+      lastUnit = '천';
+    }
+    if (remain > 0) {
+      result += `${remain.toLocaleString('ko-KR')}`;
+      lastUnit = '';
+    }
+    // 단위 붙이기
+    if (lastUnit === '천') {
+      result += '만원';
+    } else if (lastUnit === '만') {
+      result += '원';
+    } else if (lastUnit === '억') {
+      result += '원';
+    } else if (lastUnit === '조') {
+      result += '원';
+    } else if (result) {
+      result += '원';
+    }
+    return sign + result;
+  };
+
+  // 한글 단위 표시 (만원 단위) - 소득 입력 화면과 동일
+  const numberToKoreanDisplay = (num) => {
+    if (typeof num !== 'number' || isNaN(num) || num === 0) return '0원';
+    const manWon = Math.floor(num / 10000);
+    
+    // 조 단위 (1조 = 1,000,000만원)
+    if (manWon >= 100000000) {
+      const jo = Math.floor(manWon / 100000000);
+      const remainEok = Math.floor((manWon % 100000000) / 10000);
+      const remainMan = manWon % 10000;
+      let result = `${jo.toLocaleString('ko-KR')}조`;
+      if (remainEok > 0) {
+        result += `${remainEok.toLocaleString('ko-KR')}억`;
+      }
+      if (remainMan > 0) {
+        result += `${remainMan.toLocaleString('ko-KR')}만`;
+      }
+      return result + '원';
+    }
+    // 억 단위
+    else if (manWon >= 10000) {
+      const eok = Math.floor(manWon / 10000);
+      const remainMan = manWon % 10000;
+      if (remainMan === 0) {
+        return `${eok.toLocaleString('ko-KR')}억원`;
+      } else {
+        return `${eok.toLocaleString('ko-KR')}억${remainMan.toLocaleString('ko-KR')}만원`;
+      }
+    } else {
+      return `${manWon.toLocaleString('ko-KR')}만원`;
+    }
   };
 
   // 대출기간 개월수 계산
@@ -237,6 +352,18 @@ function LoanScreen({ loan, setLoan, incomes, assets, onBack, onNext, isEdit, on
   const handleDsrCalc = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     setKeyboardOpen(false);
+    // 동일 조건에서 비교 테스트 (5억원 기준)
+    const testAmount = 500000000; // 5억원
+    if (loan.years > 0 && loan.rate > 0) {
+      const testPayment1 = calculateMonthlyPayment(testAmount, loan.rate, loan.years, '원리금균등');
+      const testPayment2 = calculateMonthlyPayment(testAmount, loan.rate, loan.years, '원금균등');
+      console.log(`=== 동일 조건 비교 (5억원, ${loan.years}년, ${loan.rate}%) ===`);
+      console.log(`원리금균등 월납입: ${testPayment1.toLocaleString()}원`);
+      console.log(`원금균등 월납입: ${testPayment2.toLocaleString()}원`);
+      console.log(`차이: ${(testPayment1 - testPayment2).toLocaleString()}원`);
+      console.log('===============================');
+    }
+
     // 스트레스 가중치 (토스 계산기 기준)
     const stressFactor = 1.825;
     // 금융기관별 DSR 한도 적용
@@ -337,62 +464,156 @@ function LoanScreen({ loan, setLoan, incomes, assets, onBack, onNext, isEdit, on
     if (onBack) onBack(e);
   };
 
-  const showDsr = (dsrCalculated && dsr > 0) || (isEdit && loan.dsrCalculated && loan.dsr > 0);
-  const isFirstMonthType = loan.loanType === '원금균등';
-  const showPayment = dsrCalculated && (isFirstMonthType
-    ? loan.firstMonthPayment > 0
-    : (monthlyPayment > 0 || loan.monthlyPayment > 0));
-  const paymentText = isFirstMonthType
-    ? `첫달 ${formatWon(floorToManWon(loan.firstMonthPayment))}`
-    : `월 납입 ${formatWon(floorToManWon(monthlyPayment || loan.monthlyPayment))}`;
-
   return (
-    <Screen
-      title="대출"
-      onBack={handleBack}
-      keyboardOpen={keyboardOpen}
-      footer={
-        <button className="button button-primary" disabled={!dsrCalculated} onClick={handleNext}>
-          결과 보기
+    <div className="screen-container">
+      <header className="screen-header">
+        <button className="back-button" onClick={handleBack} style={{marginLeft: '-8px'}}><BackIcon /></button>
+        <h1 className="screen-title">대출</h1>
+      </header>
+      <main style={{ paddingBottom: keyboardOpen ? '20rem' : '3rem' }}>
+        <div className="total-display" style={{marginTop:'12px', marginBottom:'32px'}}>
+          <div className="label" style={{marginBottom: '0.5rem'}}>
+            소득 <span style={{color: '#ffffff', fontWeight: 700}}>{numberToKoreanDisplay(totalIncome)}</span> 기준
+          </div>
+          <div style={{
+            display: 'flex',
+            alignItems: 'baseline',
+            gap: '6px',
+            marginBottom: '0.3rem'
+          }}>
+            <div style={{fontSize:'2.1rem', letterSpacing:'-1px', fontWeight: 700}}>
+              {(dsrCalculated && loan.loanAmount > 0) ? numberToKoreanDisplay(loan.loanAmount) : numberToKoreanDisplay(0)}
+            </div>
+            {(dsrCalculated && ((loan.loanType === '원금균등' && loan.firstMonthPayment > 0) || (loan.loanType !== '원금균등' && (monthlyPayment > 0 || loan.monthlyPayment > 0)))) && (
+              <div style={{ 
+                fontSize: 'clamp(12px, 4vw, 16pt)', 
+                color: '#A1A2B0', 
+                fontWeight: 500,
+                whiteSpace: 'nowrap'
+              }}>
+                {loan.loanType === '원금균등'
+                  ? `첫달 ${numberToKoreanDisplay(Math.trunc(loan.firstMonthPayment / 10000) * 10000)}`
+                  : `월납입 ${numberToKoreanDisplay(Math.trunc((monthlyPayment || loan.monthlyPayment) / 10000) * 10000)}`}
+              </div>
+            )}
+          </div>
+          {((dsrCalculated && dsr > 0) || (isEdit && loan.dsrCalculated && loan.dsr > 0)) && (
+            <span style={{
+              background: 'rgb(51, 66, 96)',
+              color: 'rgb(126, 207, 255)',
+              fontWeight: 500,
+              fontSize: '0.95rem',
+              borderRadius: '12px',
+              padding: '3px 10px',
+              marginLeft: '4px',
+              display: 'inline-block',
+            }}>
+              DSR {dsr || loan.dsr}%
+            </span>
+          )}
+        </div>
+        <div className="form-group">
+          <div className="input-card">
+            <div className="label">금융기관</div>
+            <div className="input-wrapper">
+              <select
+                value={loan.finance}
+                onChange={e => handleLoanChange('finance', e.target.value)}
+                style={{ width: '100%', padding: '0.9em', borderRadius: '8px', fontSize: '1em', background: '#23243a', color: '#fff', border: 'none', appearance: 'none' }}
+              >
+                {financeOptions.map(opt => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <div className="input-card">
+            <div className="label">주담대 종류</div>
+            <div className="input-wrapper">
+              <select
+                value={loan.loanType || '원리금균등'}
+                onChange={e => handleLoanChange('loanType', e.target.value)}
+                style={{ width: '100%', padding: '0.9em', borderRadius: '8px', fontSize: '1em', background: '#23243a', color: '#fff', border: 'none', appearance: 'none' }}
+              >
+                {loanTypeOptions.map(opt => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <div className="input-card">
+            <div className="label">대출기간(년)</div>
+            <div className="input-wrapper loan-period">
+              <div className="input-auto-shrink">
+                <NumericField
+                  placeholder="대출기간 입력하세요"
+                  value={loan.years === 0 ? '' : String(loan.years)}
+                  onChange={text => handleLoanChange('years', text.replace(/[^0-9]/g, ''))}
+                  ref={yearsInputRef}
+                  onKeyDown={(e) => handleKeyPress(e, rateInputRef)}
+                  onFocus={e => {
+                      const el = e.currentTarget;
+                      setTimeout(() => {
+                        el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                      }, 150);
+                    }}
+                />
+              </div>
+            </div>
+            <div className="korean-unit">{loan.years > 0 ? `${months}개월` : ''}</div>
+          </div>
+          <div className="input-card">
+            <div className="label">금리(%)</div>
+            <div className="input-wrapper loan-rate">
+              <div className="input-auto-shrink">
+                <NumericField
+                  inputMode="decimal"
+                  placeholder="금리를 입력하세요"
+                  value={rateText}
+                  onChange={handleRateText}
+                  ref={rateInputRef}
+                  onKeyDown={(e) => handleKeyPress(e, dsrButtonRef)}
+                  onFocus={e => {
+                      const el = e.currentTarget;
+                      setTimeout(() => {
+                        el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                      }, 150);
+                    }}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', marginTop: '1.0rem' }}>
+          <button
+            className="bottom-button"
+            style={{ 
+              background: isDsrReady ? '#23243a' : '#2A2D44',
+              color: isDsrReady ? '#fff' : '#888',
+              border: '1px solid #fff',
+              cursor: isDsrReady ? 'pointer' : 'not-allowed',
+              opacity: isDsrReady ? 1 : 0.6,
+              borderRadius: 8
+            }}
+            disabled={!isDsrReady}
+            onClick={handleDsrCalc}
+            ref={dsrButtonRef}
+          >
+            DSR 계산
+          </button>
+        </div>
+      </main>
+
+      <div className="fixed-bottom-container">
+        <button
+          className="bottom-button"
+          disabled={!dsrCalculated}
+          onClick={handleNext}
+        >
+          영끌 내집 확인하기 →
         </button>
-      }
-    >
-      <Amount
-        value={formatWon(dsrCalculated && loan.loanAmount > 0 ? loan.loanAmount : 0)}
-        aside={showPayment ? paymentText : null}
-      />
-      {showDsr && <div className="amount-badges"><Badge>DSR {dsr || loan.dsr}%</Badge></div>}
-      <div className="field-list">
-        <Field label="금융기관">
-          <Select value={loan.finance} onChange={(v) => handleLoanChange('finance', v)} options={financeOptions} />
-        </Field>
-        <Field label="주담대 종류">
-          <Select value={loan.loanType || '원리금균등'} onChange={(v) => handleLoanChange('loanType', v)} options={loanTypeOptions} />
-        </Field>
-        <Field label="대출기간(년)" below={loan.years > 0 ? `${months}개월` : ''}>
-          <NumericField
-            ref={yearsInputRef}
-            placeholder="대출기간 입력하세요"
-            value={loan.years === 0 ? '' : String(loan.years)}
-            onChange={(text) => handleLoanChange('years', text.replace(/[^0-9]/g, ''))}
-            onKeyDown={(e) => handleKeyPress(e, rateInputRef)}
-          />
-        </Field>
-        <Field label="금리(%)">
-          <NumericField
-            ref={rateInputRef}
-            inputMode="decimal"
-            placeholder="금리를 입력하세요"
-            value={rateText}
-            onChange={handleRateText}
-            onKeyDown={(e) => handleKeyPress(e, dsrButtonRef)}
-          />
-        </Field>
       </div>
-      <button ref={dsrButtonRef} className="button button-secondary" disabled={!isDsrReady} onClick={handleDsrCalc}>
-        DSR 계산
-      </button>
-    </Screen>
+    </div>
   );
 }
 

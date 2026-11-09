@@ -20,19 +20,6 @@ if (typeof window !== 'undefined' && window.Capacitor) {
   }
 }
 
-// 뒤로가기(안드로이드 버튼, 웹 backbutton·백스페이스)를 누르면 이동할 화면. 없으면 홈이다.
-const BACK_STEP = {
-  'setting-privacy': 'setting',
-  'setting-license': 'setting',
-  setting: 'home',
-  asset: 'home',
-  income: 'asset',
-  loan: 'income',
-  loanFromResult: 'income',
-  'A04-1': 'loan',
-  result: 'loanFromResult',
-};
-
 function App() {
   const [step, setStep] = useState('home');
   const [assets, setAssets] = useState({ cash: 0, stocks: 0, severance: 0, insurance: 0 });
@@ -109,12 +96,39 @@ function App() {
     if (!CapApp) return; // 웹 환경에서는 실행하지 않음
     
     const handleBackButton = () => {
-      if (BACK_STEP[step]) {
-        setStep(BACK_STEP[step]);
-      } else if (CapApp.minimizeApp) {
-        CapApp.minimizeApp(); // 홈에서는 앱을 백그라운드로 내린다
+      console.log('Android back button pressed, current step:', step);
+      
+      // step별 내부 뒤로가기 분기 처리
+      if (step === 'setting-privacy' || step === 'setting-license') {
+        console.log('Back to setting screen');
+        setStep('setting');
+      } else if (step === 'setting') {
+        console.log('Back to home screen');
+        setStep('home');
+      } else if (step === 'asset') {
+        console.log('Back to home screen');
+        setStep('home');
+      } else if (step === 'income') {
+        console.log('Back to asset screen');
+        setStep('asset');
+      } else if (step === 'loan' || step === 'loanFromResult') {
+        console.log('Back to income screen');
+        setStep('income');
+      } else if (step === 'A04-1') {
+        console.log('Back to loan screen');
+        setStep('loan');
+      } else if (step === 'result') {
+        console.log('Back to loan screen (edit mode)');
+        setStep('loanFromResult');
       } else {
-        CapApp.exitApp();
+        // 홈 화면에서는 앱을 백그라운드로 내리기
+        console.log('Move app to background');
+        if (CapApp && CapApp.minimizeApp) {
+          CapApp.minimizeApp();
+        } else {
+          // fallback: 앱 종료
+          CapApp.exitApp();
+        }
       }
     };
 
@@ -132,15 +146,39 @@ function App() {
   // 웹 환경에서의 뒤로가기 처리 (브라우저 뒤로가기 버튼)
   useEffect(() => {
     const handleWebBackButton = (e) => {
+      console.log('Web back button event received, current step:', step);
+      
       // 이벤트 전파 중단
       if (e && e.preventDefault) e.preventDefault();
       if (e && e.stopImmediatePropagation) e.stopImmediatePropagation();
       if (e && e.stopPropagation) e.stopPropagation();
       
-      if (BACK_STEP[step]) {
-        setStep(BACK_STEP[step]);
+      // step별 내부 뒤로가기 분기 (Android와 동일한 로직)
+      if (step === 'setting-privacy' || step === 'setting-license') {
+        console.log('Back to setting screen');
+        setStep('setting');
+      } else if (step === 'setting') {
+        console.log('Back to home screen');
+        setStep('home');
+      } else if (step === 'asset') {
+        console.log('Back to home screen');
+        setStep('home');
+      } else if (step === 'income') {
+        console.log('Back to asset screen');
+        setStep('asset');
+      } else if (step === 'loan' || step === 'loanFromResult') {
+        console.log('Back to income screen');
+        setStep('income');
+      } else if (step === 'A04-1') {
+        console.log('Back to loan screen');
+        setStep('loan');
+      } else if (step === 'result') {
+        console.log('Back to loan screen (edit mode)');
+        setStep('loanFromResult');
       } else {
-        window.history.back(); // 홈에서는 브라우저 기본 뒤로가기
+        // 홈 등에서는 브라우저 기본 뒤로가기 허용
+        console.log('Allow browser back navigation');
+        window.history.back();
       }
     };
     
@@ -155,6 +193,7 @@ function App() {
       }
       
       if (e.key === 'Backspace' || e.keyCode === 8) {
+        console.log('Backspace key detected, treating as back button');
         handleWebBackButton(e);
       }
     };

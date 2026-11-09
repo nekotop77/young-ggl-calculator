@@ -2,8 +2,7 @@ import logo from '../assets/logo.svg';
 
 function HomeScreen({ onStart, onSetting }) {
   return (
-    // 인트로는 기존 디자인을 그대로 쓴다 (design.md '예외' 참고). 스타일은 index.css의 .intro
-    <div className="screen-container intro">
+    <div className="screen-container">
       <div style={{position:'absolute',right:'16px',zIndex:2,display:'flex',gap:'8px'}}>
         <button onClick={onSetting} style={{background:'none',border:'none',padding:0,cursor:'pointer'}}>
           <span className="material-icons" style={{fontSize:'24px',color:'#fff'}}>settings</span>
